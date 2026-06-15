@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raiffeisen Finanzboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;list-style:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#F7F7F6;color:#2a2a2a;display:flex;height:100vh;overflow:hidden}
+:root{--y:#FBBA00;--yd:#E5A800;--yl:#FFFBEC;--border:#EBEBEA;--bg:#F7F7F6;--text:#2a2a2a;--muted:#9a9a9a;--subtle:#c8c8c8;--green:#2e7d52;--greenl:rgba(46,125,82,0.08);--red:#c0392b;--redl:rgba(192,57,43,0.08);--amber:#a06800;--amberl:rgba(160,104,0,0.08);--blue:#1a4e8a;--bluel:rgba(26,78,138,0.08)}
+.sidebar{width:220px;min-width:220px;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:fixed;left:0;top:0;z-index:10}
+.sidebar-logo{padding:18px 16px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-img{width:40px;height:40px;border-radius:6px;object-fit:contain;flex-shrink:0}
+.logo-name{font-size:13.5px;font-weight:700;color:var(--text);line-height:1.2}
+.logo-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.nav-section{padding:10px 0;flex:1;overflow-y:auto}
+.nav-group-label{font-size:10px;font-weight:600;color:var(--subtle);letter-spacing:0.8px;text-transform:uppercase;padding:12px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 16px;color:var(--muted);font-size:13px;cursor:pointer;transition:all 0.12s;margin:1px 8px;border-radius:6px}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--yl);color:var(--amber);font-weight:600}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;font-style:normal}
+.nav-badge{margin-left:auto;background:var(--y);color:#5a3d00;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.user-av{width:30px;height:30px;border-radius:50%;background:var(--yl);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--amber);flex-shrink:0}
+.user-name{font-size:12px;font-weight:600;color:var(--text)}
+.user-role{font-size:10.5px;color:var(--muted)}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{font-size:14.5px;font-weight:700;color:var(--text)}
+.topbar-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:500;cursor:pointer;border:none;transition:all 0.12s;font-family:inherit}
+.btn-primary{background:var(--y);color:#4a3300}
+.btn-primary:hover{background:var(--yd)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bg);color:var(--text)}
+.btn-danger{background:var(--redl);color:var(--red);border:1px solid rgba(192,57,43,0.2)}
+.btn-danger:hover{background:rgba(192,57,43,0.15)}
+.content{flex:1;overflow-y:auto;padding:24px 28px}
+.view{display:none}.view.active{display:block}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.metric-card{background:#fff;border-radius:10px;padding:18px 18px 14px;border:1px solid var(--border)}
+.metric-label{font-size:10.5px;color:var(--muted);font-weight:500;letter-spacing:0.3px;margin-bottom:8px}
+.metric-value{font-size:24px;font-weight:700;color:var(--text);letter-spacing:-0.5px;line-height:1}
+.metric-delta{font-size:11.5px;margin-top:6px;color:var(--muted)}
+.metric-delta.up{color:var(--green)}.metric-delta.dn{color:var(--red)}
+.card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:20px 22px;margin-bottom:14px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:13.5px;font-weight:600;color:var(--text)}
+.card-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.company-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.co-card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:18px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;position:relative}
+.co-card:hover{border-color:var(--y);box-shadow:0 2px 16px rgba(251,186,0,0.1)}
+.co-logo{width:42px;height:42px;border-radius:9px;background:var(--y);display:flex;align-items:center;justify-content:center;color:#4a3300;font-weight:800;font-size:14px;flex-shrink:0}
+.co-name{font-size:13.5px;font-weight:700;color:var(--text)}
+.co-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.co-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.co-stat-val{font-size:13px;font-weight:600;color:var(--text)}
+.co-stat-lbl{font-size:9.5px;color:var(--muted);margin-top:1px;text-transform:uppercase;letter-spacing:0.3px}
+.co-actions{position:absolute;top:12px;right:12px;display:flex;gap:5px;opacity:0;transition:opacity 0.15s;pointer-events:none}
+.co-card:hover .co-actions{opacity:1;pointer-events:auto}
+.co-action-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:all 0.12s;color:var(--muted)}
+.co-action-btn.edit:hover{background:var(--yl);border-color:rgba(251,186,0,0.4);color:var(--amber)}
+.co-action-btn.del:hover{background:var(--redl);border-color:rgba(192,57,43,0.2);color:var(--red)}
+.add-co{background:#fff;border-radius:10px;border:2px dashed var(--border);padding:18px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:155px;transition:all 0.15s;color:var(--subtle);gap:8px}
+.add-co:hover{border-color:var(--y);color:var(--amber);background:var(--yl)}
+.add-co span{font-size:12.5px;font-weight:500}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot.g{background:var(--green)}.dot.r{background:var(--red)}.dot.a{background:var(--amber)}.dot.n{background:var(--subtle)}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.tg{background:var(--greenl);color:var(--green)}.tr{background:var(--redl);color:var(--red)}.ta{background:var(--amberl);color:var(--amber)}.tb{background:var(--bluel);color:var(--blue)}.ty{background:var(--yl);color:var(--amber)}
+.alert{border-radius:8px;padding:12px 16px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+.alert-y{background:var(--yl);border:1px solid rgba(251,186,0,0.4);color:#6b4700}
+.alert-r{background:var(--redl);border:1px solid rgba(192,57,43,0.2);color:#7a1a10}
+.alert-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.rtabs{display:flex;gap:2px;background:var(--bg);padding:3px;border-radius:8px;margin-bottom:18px;flex-wrap:wrap;border:1px solid var(--border)}
+.rtab{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--muted);transition:all 0.12s;white-space:nowrap}
+.rtab.active{background:#fff;color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.rtab:hover:not(.active){color:var(--text)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.kpi-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 15px}
+.kpi-label{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:0.3px;margin-bottom:5px;text-transform:uppercase}
+.kpi-val{font-size:20px;font-weight:700;letter-spacing:-0.3px}
+.kpi-val.g{color:var(--green)}.kpi-val.w{color:var(--amber)}.kpi-val.b{color:var(--red)}
+.kpi-bench{font-size:10px;color:var(--subtle);margin-top:3px}
+.kpi-bar{height:3px;background:#f0f0ee;border-radius:2px;margin-top:8px;overflow:hidden}
+.kpi-fill{height:100%;border-radius:2px}
+.cg2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.cg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.cw{position:relative;height:200px}.cwl{position:relative;height:240px}
+.dt{width:100%;border-collapse:collapse;font-size:12.5px}
+.dt th{text-align:left;padding:9px 14px;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid var(--border)}
+.dt td{padding:10px 14px;border-bottom:1px solid #f5f5f4;color:#444;vertical-align:middle}
+.dt tr:last-child td{border-bottom:none}
+.dt tr:hover td{background:#fafaf9}
+.pbar{height:5px;background:#f0f0ee;border-radius:3px;overflow:hidden;margin-top:7px}
+.pfill{height:100%;border-radius:3px}
+.pfill.g{background:var(--green)}.pfill.a{background:var(--amber)}.pfill.r{background:var(--red)}.pfill.y{background:var(--y)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.2);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:520px;max-width:95vw;padding:28px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.1)}
+.modal-sm{width:380px}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:2px}
+.modal-sub{font-size:12.5px;color:var(--muted);margin-bottom:20px}
+.form-group{margin-bottom:13px}
+.form-label{font-size:11px;font-weight:600;color:#666;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.3px}
+.form-input{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;transition:border 0.12s;font-family:inherit;color:var(--text);background:#fff}
+.form-input:focus{border-color:var(--y);box-shadow:0 0 0 3px rgba(251,186,0,0.12)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-footer{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.modal-footer-right{display:flex;gap:8px}
+.upload-z{border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;color:var(--subtle)}
+.upload-z:hover{border-color:var(--y);background:var(--yl);color:var(--amber)}
+.upload-z p{font-size:12px;color:var(--muted)}
+.file-chip{display:inline-flex;align-items:center;gap:5px;background:var(--yl);border:1px solid rgba(251,186,0,0.3);border-radius:5px;padding:4px 10px;font-size:11.5px;color:var(--amber);font-weight:500;margin:3px}
+.bc{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted);margin-bottom:5px}
+.bc .lnk{cursor:pointer}.bc .lnk:hover{color:var(--amber)}
+.detail-hdr{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
+.toggle{width:40px;height:22px;border-radius:11px;position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0}
+.toggle.on{background:var(--y)}.toggle.off{background:#ddd}
+.tknob{width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:2px;transition:left 0.15s}
+.toggle.on .tknob{left:20px}.toggle.off .tknob{left:2px}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--border)}
+.srow:last-child{border-bottom:none}
+.srow-t{font-size:13px;font-weight:600;color:var(--text)}
+.srow-s{font-size:11.5px;color:var(--muted);margin-top:1px}
+.wc-row{display:flex;justify-content:space-between;margin-bottom:4px}
+.wc-lbl{font-size:12.5px;color:#555}.wc-val{font-size:12.5px;font-weight:600;color:var(--text)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:#e0e0de;border-radius:2px}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <img class="logo-img" src="data:image/jpeg;base64,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" alt="Raiffeisenverband Tirol">
+    <div><div class="logo-name">Finanzboard</div><div class="logo-sub">Raiffeisenverband Tirol</div></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-group-label">Übersicht</div>
+    <div class="nav-item active" data-view="dashboard"><span class="nav-icon">◈</span> Dashboard</div>
+    <div class="nav-item" data-view="companies"><span class="nav-icon">◻</span> Unternehmen <span class="nav-badge" id="nav-count">4</span></div>
+    <div class="nav-group-label">Verwaltung</div>
+    <div class="nav-item" data-view="users"><span class="nav-icon">◎</span> Benutzer</div>
+    <div class="nav-group-label">System</div>
+    <div class="nav-item" data-view="settings"><span class="nav-icon">◌</span> Einstellungen</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-av">MH</div>
+    <div><div class="user-name">Manuel Huber</div><div class="user-role">Leitender Prüfer</div></div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Übersicht</div>
+      <div class="topbar-sub" id="topbar-sub">Raiffeisenverband Tirol · Prüfungsportal · Juni 2025</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost" id="btn-add">+ Unternehmen</button>
+      <div id="proxy-status" title="Proxy-Status" style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;border:1px solid var(--border);background:#fff;cursor:default">
+        <span id="proxy-dot" style="width:7px;height:7px;border-radius:50%;background:#ccc;flex-shrink:0"></span>
+        <span id="proxy-label" style="color:var(--muted)">Proxy…</span>
+      </div>
+      <button class="btn btn-primary" id="btn-export-pdf" style="display:none" onclick="exportPDF()">&#128196; PDF exportieren</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <div class="view active" id="view-dashboard">
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-label">Unternehmen</div><div class="metric-value" id="dash-count">4</div><div class="metric-delta up">aktiv geprüft</div></div>
+        <div class="metric-card"><div class="metric-label">Berichte erstellt</div><div class="metric-value">27</div><div class="metric-delta up">+8 vs. Vormonat</div></div>
+        <div class="metric-card"><div class="metric-label">Auffälligkeiten</div><div class="metric-value" style="color:var(--red)">1</div><div class="metric-delta dn">Handlungsbedarf</div></div>
+        <div class="metric-card"><div class="metric-label">Aktive Prüfer</div><div class="metric-value">2</div><div class="metric-delta">Manuel &amp; Benedikt</div></div>
+      </div>
+      <div class="alert alert-r">
+        <span class="alert-icon">&#9888;</span>
+        <div><strong>KI-Hinweis:</strong> Bei <strong>Sennerei Ötztal</strong> wurde ein Rückgang der Eigenkapitalquote von 28% auf 19% sowie ein negatives EBITDA festgestellt. Detailanalyse dringend empfohlen.</div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Meine Unternehmen</div><div class="card-sub">Zuletzt bearbeitet</div></div>
+          <button class="btn btn-ghost" onclick="switchView('companies')" style="font-size:12px">Alle anzeigen &#8594;</button>
+        </div>
+        <div class="company-grid" id="dash-company-grid"></div>
+      </div>
+    </div>
+
+    <div class="view" id="view-companies">
+      <div class="company-grid" id="all-company-grid"></div>
+    </div>
+
+    <div class="view" id="view-company-detail">
+      <div class="bc">
+        <span class="lnk" onclick="switchView('companies')">Unternehmen</span>
+        <span style="color:var(--border)">&#8250;</span>
+        <span id="bc-name" style="color:var(--amber);font-weight:500">–</span>
+      </div>
+      <div class="detail-hdr">
+        <div id="detail-logo" style="width:48px;height:48px;border-radius:9px;background:var(--y);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;flex-shrink:0;color:#4a3300">–</div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:700" id="detail-name">–</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:3px" id="detail-meta">–</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px">
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost" id="detail-edit-btn" style="font-size:12px">&#9998; Bearbeiten</button>
+            <button class="btn btn-primary" onclick="fakeUpload()" style="font-size:12px">&#8593; PDF hochladen</button>
+          </div>
+        </div>
+      </div>
+      <!-- Hochgeladene Abschluesse -->
+      <div id="abschluesse-card" style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:12.5px;font-weight:600;color:var(--text)">Hochgeladene Jahresabschlüsse</div>
+          <button class="btn btn-ghost" onclick="fakeUpload()" style="font-size:11px;padding:4px 10px">+ PDF hinzufügen</button>
+        </div>
+        <div id="abschluesse-liste"><div style="font-size:12px;color:var(--muted)">Noch kein Abschluss hochgeladen.</div></div>
+      </div>
+      <div class="rtabs">
+        <div class="rtab active" data-report="rohdaten">📋 Rohdaten</div>
+        <div class="rtab" data-report="kpi">KPI Dashboard</div>
+        <div class="rtab" data-report="guv">GuV &amp; P&amp;L</div>
+        <div class="rtab" data-report="trend">Trendanalyse</div>
+        <div class="rtab" data-report="jahresvergleich">Jahresvergleich</div>
+        <div class="rtab" data-report="working-capital">Working Capital</div>
+        <div class="rtab" data-report="liquiditaet">Liquidität &amp; Konten</div>
+        <div class="rtab" data-report="bilanz">Bilanzstruktur</div>
+        <div class="rtab" data-report="notizen">Notizen</div>
+        <div class="rtab" data-report="bericht" style="color:var(--amber);font-weight:600">Prüfungsbericht</div>
+      </div>
+      <div id="report-rohdaten" class="report-content" style="display:none">
+        <!-- Empty state when no data -->
+        <div id="rd-empty" style="text-align:center;padding:64px 24px;color:var(--muted)">
+          <div style="font-size:36px;margin-bottom:14px">📂</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px">Kein Jahresabschluss hochgeladen</div>
+          <div style="font-size:12px">PDF hochladen um die Rohdaten zu sehen</div>
+        </div>
+        <!-- Populated content -->
+        <div id="rd-content" style="display:none">
+          <!-- Company header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:18px">
+            <div>
+              <div style="font-size:15px;font-weight:700;color:var(--text)" id="rd-name">–</div>
+              <div style="font-size:11.5px;color:var(--muted);margin-top:2px" id="rd-meta">–</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="rd-badge" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:6px;padding:3px 12px;font-size:12px;font-weight:600">GJ –</span>
+              <span id="rd-pruefer-badge" style="background:var(--yl);border:1px solid rgba(251,186,0,0.4);color:var(--amber);border-radius:6px;padding:3px 12px;font-size:12px;font-weight:600">–</span>
+            </div>
+          </div>
+          <!-- KPI Kacheln -->
+          <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">Kennzahlen auf einen Blick</div>
+          <div id="rd-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px"></div>
+          <!-- Tables row -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+            <!-- GuV -->
+            <div class="card" style="margin-bottom:0;padding:16px 18px">
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">Gewinn- &amp; Verlustrechnung</div>
+              <table class="dt" id="rd-tbl-guv" style="font-size:12.5px;width:100%"></table>
+            </div>
+            <!-- Bilanz -->
+            <div class="card" style="margin-bottom:0;padding:16px 18px">
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">Bilanz</div>
+              <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:5px">AKTIVA</div>
+              <table class="dt" id="rd-tbl-aktiva" style="font-size:12.5px;width:100%;margin-bottom:12px"></table>
+              <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:5px;margin-top:8px">PASSIVA</div>
+              <table class="dt" id="rd-tbl-passiva" style="font-size:12.5px;width:100%"></table>
+            </div>
+          </div>
+          <!-- Sparten -->
+          <div class="card" id="rd-sparten-card" style="margin-bottom:0;padding:16px 18px;display:none">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">Umsatz nach Sparten</div>
+            <table class="dt" id="rd-tbl-sparten" style="font-size:12.5px;width:100%"></table>
+          </div>
+        </div>
+      </div>
+
+      <div id="report-kpi" class="report-content" style="display:none">
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">Umsatzrendite</div><div class="kpi-val g">6,3%</div><div class="kpi-bench">Benchmark &gt; 5%</div><div class="kpi-bar"><div class="kpi-fill" style="width:76%;background:var(--green)"></div></div></div>
+          <div class="kpi-card"><div class="kpi-label">EBITDA-Marge</div><div class="kpi-val g">8,2%</div><div class="kpi-bench">Benchmark &gt; 7%</div><div class="kpi-bar"><div class="kpi-fill" style="width:82%;background:var(--green)"></div></div></div>
+          <div class="kpi-card"><div class="kpi-label">Eigenkapitalquote</div><div class="kpi-val w">28,4%</div><div class="kpi-bench">Benchmark &gt; 30%</div><div class="kpi-bar"><div class="kpi-fill" style="width:55%;background:var(--amber)"></div></div></div>
+          <div class="kpi-card"><div class="kpi-label">Verschuldungsgrad</div><div class="kpi-val g">1,4x</div><div class="kpi-bench">Benchmark &lt; 2,5x</div><div class="kpi-bar"><div class="kpi-fill" style="width:68%;background:var(--green)"></div></div></div>
+          <div class="kpi-card"><div class="kpi-label">Current Ratio</div><div class="kpi-val g">1,9</div><div class="kpi-bench">Benchmark &gt; 1,5</div><div class="kpi-bar"><div class="kpi-fill" style="width:80%;background:var(--green)"></div></div></div>
+          <div class="kpi-card"><div class="kpi-label">Personalkosten</div><div class="kpi-val w">34,1%</div><div class="kpi-bench">Benchmark &lt; 32%</div><div class="kpi-bar"><div class="kpi-fill" style="width:65%;background:var(--amber)"></div></div></div>
+          <div class="kpi-card"><div class="kpi-label">Netto-Cashflow</div><div class="kpi-val g">&#8364; 892k</div><div class="kpi-bench">Positiv</div><div class="kpi-bar"><div class="kpi-fill" style="width:72%;background:var(--green)"></div></div></div>
+          <div class="kpi-card"><div class="kpi-label">Debitorenziel</div><div class="kpi-val g">32 Tage</div><div class="kpi-bench">Benchmark &lt; 45 Tage</div><div class="kpi-bar"><div class="kpi-fill" style="width:85%;background:var(--green)"></div></div></div>
+        </div>
+        <div class="cg2">
+          <div class="card" style="margin-bottom:0"><div class="card-header"><div class="card-title">Umsatz &amp; EBITDA 2024</div></div><div class="cw"><canvas id="c-kpi-main"></canvas></div></div>
+          <div class="card" style="margin-bottom:0"><div class="card-header"><div class="card-title">Kostenstruktur 2024</div></div><div class="cw"><canvas id="c-kpi-cost"></canvas></div></div>
+        </div>
+        <div style="margin-top:14px" class="alert alert-y"><span class="alert-icon">&#10022;</span><div><strong>KI-Analyse:</strong> Umsatzrendite übertrifft Branchenmedian. Handlungsbedarf bei Eigenkapitalquote (knapp unter Benchmark) und Personalkosten (+2,1 PP). Empfehlung: Kapitalstruktur-Review Q3.</div></div>
+      </div>
+      <div id="report-guv" class="report-content" style="display:none">
+        <div class="cg2">
+          <div class="card" style="margin-bottom:0"><div class="card-header"><div class="card-title">Monatsumsatz 2023 vs. 2024</div></div><div class="cwl"><canvas id="c-guv-monthly"></canvas></div></div>
+          <div class="card" style="margin-bottom:0"><div class="card-header"><div><div class="card-title">Aufwandsstruktur</div><div class="card-sub">Anteil am Umsatz in %</div></div></div><div class="cwl"><canvas id="c-guv-db"></canvas></div></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-header"><div class="card-title">GuV-Zusammenfassung</div></div>
+          <table class="dt">
+            <thead><tr><th>Position</th><th>2023</th><th>2024</th><th>Veränderung</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Umsatzerlöse</strong></td><td>&#8364; 7,7 Mio</td><td>&#8364; 8,4 Mio</td><td style="color:var(--green)">+&#8364; 0,7 Mio</td><td><span class="tag tg">+9,1%</span></td></tr>
+              <tr><td>Materialaufwand</td><td>&#8364; 3,9 Mio</td><td>&#8364; 4,2 Mio</td><td style="color:var(--red)">+&#8364; 300k</td><td><span class="tag ta">+7,7%</span></td></tr>
+              <tr><td>Personalaufwand</td><td>&#8364; 2,4 Mio</td><td>&#8364; 2,7 Mio</td><td style="color:var(--red)">+&#8364; 300k</td><td><span class="tag tr">+12,5%</span></td></tr>
+              <tr><td>Sonstige Aufwendungen</td><td>&#8364; 820k</td><td>&#8364; 900k</td><td style="color:var(--red)">+&#8364; 80k</td><td><span class="tag ta">+9,8%</span></td></tr>
+              <tr><td><strong>EBITDA</strong></td><td>&#8364; 580k</td><td>&#8364; 600k</td><td style="color:var(--green)">+&#8364; 20k</td><td><span class="tag tg">+3,4%</span></td></tr>
+              <tr><td>Abschreibungen</td><td>&#8364; 130k</td><td>&#8364; 150k</td><td style="color:var(--red)">+&#8364; 20k</td><td><span class="tag tr">+15,4%</span></td></tr>
+              <tr><td><strong>EBIT</strong></td><td>&#8364; 450k</td><td>&#8364; 450k</td><td style="color:var(--muted)">&#8364; 0</td><td><span class="tag ta">0,0%</span></td></tr>
+              <tr><td><strong>Jahresüberschuss</strong></td><td>&#8364; 430k</td><td>&#8364; 440k</td><td style="color:var(--green)">+&#8364; 10k</td><td><span class="tag tg">+2,3%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="report-trend" class="report-content" style="display:none">
+        <div class="card"><div class="card-header"><div class="card-title">Umsatzentwicklung — 5-Jahrestrend</div></div><div class="cwl"><canvas id="c-trend-revenue"></canvas></div></div>
+        <div class="cg3">
+          <div class="card" style="margin-bottom:0"><div class="card-header"><div class="card-title">EBITDA-Marge</div></div><div class="cw"><canvas id="c-trend-ebitda"></canvas></div></div>
+          <div class="card" style="margin-bottom:0"><div class="card-header"><div class="card-title">Personalkosten</div></div><div class="cw"><canvas id="c-trend-personal"></canvas></div></div>
+          <div class="card" style="margin-bottom:0"><div class="card-header"><div class="card-title">Eigenkapitalquote</div></div><div class="cw"><canvas id="c-trend-ek"></canvas></div></div>
+        </div>
+        <div style="margin-top:14px" class="alert alert-y"><span class="alert-icon">&#10022;</span><div><strong>KI-Trendanalyse:</strong> Umsatz wächst mit +9,7% CAGR über 5 Jahre. EBITDA stabil. Kritisch: EK-Quote rückläufig 36% → 28% seit 2021. Beobachtung empfohlen.</div></div>
+      </div>
+      <div id="report-jahresvergleich" class="report-content" style="display:none">
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">Umsatz</div><div class="metric-value" style="color:var(--green)">+9,1%</div><div class="metric-delta">&#8364; 7,7 Mio → &#8364; 8,4 Mio</div></div>
+          <div class="metric-card"><div class="metric-label">EBITDA</div><div class="metric-value" style="color:var(--green)">+3,4%</div><div class="metric-delta">&#8364; 580k → &#8364; 600k</div></div>
+          <div class="metric-card"><div class="metric-label">Personal</div><div class="metric-value" style="color:var(--red)">+12,5%</div><div class="metric-delta">&#8364; 2,4 Mio → &#8364; 2,7 Mio</div></div>
+          <div class="metric-card"><div class="metric-label">EK-Quote</div><div class="metric-value" style="color:var(--amber)">−2,1 PP</div><div class="metric-delta">30,5% → 28,4%</div></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">Quartalsvergleich 2023 vs. 2024</div></div><div class="cwl"><canvas id="c-jv-quarterly"></canvas></div></div>
+      </div>
+      <div id="report-working-capital" class="report-content" style="display:none">
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">Working Capital</div><div class="metric-value" style="color:var(--green)">&#8364; 820k</div><div class="metric-delta up">Positiv</div></div>
+          <div class="metric-card"><div class="metric-label">Debitorenziel</div><div class="metric-value">32 Tage</div><div class="metric-delta up">Gut</div></div>
+          <div class="metric-card"><div class="metric-label">Kreditorenziel</div><div class="metric-value">38 Tage</div><div class="metric-delta">Akzeptabel</div></div>
+          <div class="metric-card"><div class="metric-label">Lagerreichweite</div><div class="metric-value" style="color:var(--amber)">52 Tage</div><div class="metric-delta dn">Zu hoch</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Working Capital Komponenten</div></div>
+          <div class="wc-row"><div class="wc-lbl">Forderungen L&amp;L</div><div class="wc-val">&#8364; 640k</div></div><div class="pbar"><div class="pfill g" style="width:68%"></div></div><div style="height:13px"></div>
+          <div class="wc-row"><div class="wc-lbl">Vorräte</div><div class="wc-val">&#8364; 920k</div></div><div class="pbar"><div class="pfill a" style="width:82%"></div></div><div style="height:13px"></div>
+          <div class="wc-row"><div class="wc-lbl">Verbindlichkeiten L&amp;L</div><div class="wc-val">&#8364; 740k</div></div><div class="pbar"><div class="pfill r" style="width:58%"></div></div>
+        </div>
+        <div class="alert alert-y"><span class="alert-icon">&#10022;</span><div><strong>KI-Hinweis:</strong> Lagerreichweite 52 Tage leicht über Branchendurchschnitt. Liquiditätspotenzial durch Lagerabbau: ca. &#8364; 200–250k.</div></div>
+      </div>
+      <div id="report-liquiditaet" class="report-content" style="display:none">
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">Liquidität 1. Grades</div><div class="metric-value" style="color:var(--green)">0,38</div><div class="metric-delta up">Benchmark &gt; 0,2</div></div>
+          <div class="metric-card"><div class="metric-label">Liquidität 2. Grades</div><div class="metric-value" style="color:var(--green)">1,12</div><div class="metric-delta up">Benchmark &gt; 1,0</div></div>
+          <div class="metric-card"><div class="metric-label">Liquidität 3. Grades</div><div class="metric-value" style="color:var(--green)">1,78</div><div class="metric-delta up">Benchmark &gt; 1,5</div></div>
+          <div class="metric-card"><div class="metric-label">Freie Liquiditätsreserve</div><div class="metric-value">&#8364; 380k</div><div class="metric-delta">Ausreichend</div></div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">Cash-Flow-Verlauf 2024</div></div><div class="cwl"><canvas id="c-liq-cashflow"></canvas></div></div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Bankkonto-Saldi</div></div>
+          <table class="dt">
+            <thead><tr><th>Konto</th><th>Kreditinstitut</th><th>Saldo 12/2023</th><th>Saldo 12/2024</th><th>Veränd.</th></tr></thead>
+            <tbody>
+              <tr><td>Girokonto AT12 1122 3344</td><td>Raiffeisenbank Innsbruck</td><td>&#8364; 140k</td><td>&#8364; 180k</td><td style="color:var(--green)">+&#8364; 40k</td></tr>
+              <tr><td>Festgeldkonto AT12 5566 7788</td><td>Raiffeisenbank Innsbruck</td><td>&#8364; 160k</td><td>&#8364; 200k</td><td style="color:var(--green)">+&#8364; 40k</td></tr>
+              <tr><td>Kreditlinie AT12 9900 1122</td><td>Raiffeisen Tirol</td><td>&#8364; 60k</td><td>&#8364; 50k</td><td style="color:var(--green)">−&#8364; 10k</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="report-bilanz" class="report-content" style="display:none">
+        <div class="cg2">
+          <div class="card" style="margin-bottom:0"><div class="card-header"><div class="card-title">Aktivseite 2024</div></div><div class="cw"><canvas id="c-bilanz-aktiv"></canvas></div></div>
+          <div class="card" style="margin-bottom:0"><div class="card-header"><div class="card-title">Passivseite 2024</div></div><div class="cw"><canvas id="c-bilanz-passiv"></canvas></div></div>
+        </div>
+        <div class="card" style="margin-top:14px"><div class="card-header"><div class="card-title">Bilanzstrukturvergleich 2023 vs. 2024</div></div><div class="cwl"><canvas id="c-bilanz-compare"></canvas></div></div>
+      </div>
+
+      <!-- NOTIZEN -->
+      <div id="report-notizen" class="report-content" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Notizen &amp; Beobachtungen</div><div class="card-sub">Für alle Prüfer sichtbar</div></div>
+            <button class="btn btn-primary" onclick="saveNote()" id="note-save-btn" style="font-size:12px">Speichern</button>
+          </div>
+          <textarea id="note-textarea" style="width:100%;min-height:160px;border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;font-family:inherit;color:var(--text);resize:vertical;outline:none;line-height:1.6;transition:border 0.12s" placeholder="Notizen zur Prüfung, Beobachtungen aus der Abschlusssitzung, Hinweise für den nächsten Prüfungszyklus ..." onfocus="this.style.borderColor='var(--y)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+          <div id="note-meta" style="font-size:11px;color:var(--muted);margin-top:8px;text-align:right"></div>
+        </div>
+        <div class="card" id="note-history-card" style="display:none">
+          <div class="card-header"><div class="card-title">Verlauf</div></div>
+          <div id="note-history"></div>
+        </div>
+      </div>
+
+      <!-- PRÜFUNGSBERICHT -->
+      <div id="report-bericht" class="report-content" style="display:none">
+
+        <!-- Bewertung -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Gesamtbewertung</div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div class="bew-option active" data-val="gut" onclick="selectBewertung(this)" style="flex:1;min-width:140px;border:2px solid var(--green);background:var(--greenl);border-radius:9px;padding:14px 16px;cursor:pointer;text-align:center">
+              <div style="font-size:18px;margin-bottom:4px">&#10003;</div>
+              <div style="font-size:13px;font-weight:600;color:var(--green)">Keine wesentlichen Mängel</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Betrieb wirtschaftlich stabil</div>
+            </div>
+            <div class="bew-option" data-val="mittel" onclick="selectBewertung(this)" style="flex:1;min-width:140px;border:2px solid var(--border);background:#fff;border-radius:9px;padding:14px 16px;cursor:pointer;text-align:center">
+              <div style="font-size:18px;margin-bottom:4px">&#9888;</div>
+              <div style="font-size:13px;font-weight:600;color:var(--amber)">Mängel mit Handlungsbedarf</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Empfehlungen wurden ausgesprochen</div>
+            </div>
+            <div class="bew-option" data-val="kritisch" onclick="selectBewertung(this)" style="flex:1;min-width:140px;border:2px solid var(--border);background:#fff;border-radius:9px;padding:14px 16px;cursor:pointer;text-align:center">
+              <div style="font-size:18px;margin-bottom:4px">&#9888;</div>
+              <div style="font-size:13px;font-weight:600;color:var(--red)">Kritische Situation</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Sofortige Maßnahmen erforderlich</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KI Zusammenfassung -->
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">KI-Zusammenfassung</div><div class="card-sub">Automatisch generiert aus den Kennzahlen · bearbeitbar</div></div>
+            <div style="font-size:11px;color:var(--muted);background:var(--yl);padding:3px 10px;border-radius:20px;color:var(--amber)">KI-generiert</div>
+          </div>
+          <textarea id="bericht-zusammenfassung" style="width:100%;min-height:110px;border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;font-family:inherit;color:var(--text);resize:vertical;outline:none;line-height:1.6;transition:border 0.12s" onfocus="this.style.borderColor='var(--y)'" onblur="this.style.borderColor='var(--border)'">Der geprüfte Betrieb weist für das Geschäftsjahr 2024 eine solide Ertragslage aus. Die Umsatzrendite von 6,3% liegt über dem Branchenmedian. Die EBITDA-Marge von 8,2% übertrifft den Benchmark von 7%. Die Eigenkapitalquote von 28,4% liegt knapp unter dem Zielwert von 30% und ist seit 2021 rückläufig. Die Personalkosten entwickeln sich mit +10,5% überproportional zum Umsatzwachstum von +9,1%. Die Liquiditätskennzahlen sind auf allen drei Graden im grünen Bereich.</textarea>
+        </div>
+
+        <!-- Festgestellte Mängel -->
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Festgestellte Mängel &amp; Auffälligkeiten</div></div>
+            <button class="btn btn-ghost" style="font-size:12px" onclick="addMangelRow()">+ Mangel hinzufügen</button>
+          </div>
+          <div id="maengel-list">
+            <div class="mangel-row" style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+              <select style="border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;color:var(--text);background:#fff;flex-shrink:0">
+                <option>&#9888; Wesentlich</option><option>&#9432; Hinweis</option><option>&#9652; Empfehlung</option>
+              </select>
+              <input style="flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);outline:none" value="Eigenkapitalquote unter Zielwert von 30% — Trend seit 2021 rückläufig (36% → 28,4%)">
+              <button onclick="this.parentElement.remove()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0">&#10005;</button>
+            </div>
+            <div class="mangel-row" style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+              <select style="border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;color:var(--text);background:#fff;flex-shrink:0">
+                <option>&#9432; Hinweis</option><option>&#9888; Wesentlich</option><option>&#9652; Empfehlung</option>
+              </select>
+              <input style="flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);outline:none" value="Personalkosten-Wachstum überproportional zum Umsatz (+10,5% vs. +9,1%)">
+              <button onclick="this.parentElement.remove()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0">&#10005;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empfehlungen -->
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Empfehlungen</div><div class="card-sub">Für die Abschlusssitzung und den nächsten Prüfungszyklus</div></div>
+            <button class="btn btn-ghost" style="font-size:12px" onclick="addEmpfehlungRow()">+ Hinzufügen</button>
+          </div>
+          <div id="empfehlungen-list">
+            <div class="empf-row" style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--yl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--amber);flex-shrink:0;margin-top:4px">1</div>
+              <input style="flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);outline:none" value="Kapitalstruktur-Review im Q3 2025 — Ziel: EK-Quote auf 30%+ anheben">
+              <button onclick="this.parentElement.remove();renumberEmpf()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0">&#10005;</button>
+            </div>
+            <div class="empf-row" style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--yl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--amber);flex-shrink:0;margin-top:4px">2</div>
+              <input style="flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);outline:none" value="Personalkosten-Entwicklung im nächsten Prüfungsjahr gesondert beobachten">
+              <button onclick="this.parentElement.remove();renumberEmpf()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0">&#10005;</button>
+            </div>
+            <div class="empf-row" style="display:flex;align-items:flex-start;gap:10px;padding:10px 0">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--yl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--amber);flex-shrink:0;margin-top:4px">3</div>
+              <input style="flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);outline:none" value="Lagerreichweite optimieren — Liquiditätspotenzial ca. € 200–250k">
+              <button onclick="this.parentElement.remove();renumberEmpf()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0">&#10005;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Abschlusssitzung -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Abschlusssitzung</div></div>
+          <div class="form-row" style="margin-bottom:13px">
+            <div class="form-group"><label class="form-label">Datum der Sitzung</label><input class="form-input" type="date" id="sitzung-datum"></div>
+            <div class="form-group"><label class="form-label">Teilnehmer</label><input class="form-input" id="sitzung-teilnehmer" placeholder="z.B. GF Muster, Manuel, Benedikt"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Protokoll / Beschlüsse</label>
+            <textarea class="form-input" rows="3" placeholder="Wesentliche Beschlüsse und Vereinbarungen aus der Abschlusssitzung ..."></textarea>
+          </div>
+        </div>
+
+        <!-- Export -->
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:20px">
+          <button class="btn btn-primary" onclick="exportPDF()">&#128196; PDF exportieren</button>
+        </div>
+
+      </div>
+
+    </div><!-- /view-company-detail -->
+
+    <div class="view" id="view-users">
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Prüfer &amp; Benutzer</div><div class="card-sub">Zugangsverwaltung</div></div><button class="btn btn-primary" onclick="openUserModal()">+ Benutzer hinzufügen</button></div>
+        <table class="dt">
+          <thead><tr><th>Name</th><th>Rolle</th><th>Zugeordnete Unternehmen</th><th>Letzter Login</th><th>Status</th><th></th></tr></thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MODAL: Benutzer anlegen / bearbeiten -->
+    <div class="modal-overlay" id="user-modal-overlay">
+      <div class="modal modal-sm" onclick="event.stopPropagation()" style="width:460px">
+        <div class="modal-title" id="user-modal-title">Benutzer anlegen</div>
+        <div class="modal-sub" id="user-modal-sub">Zugangsdaten erfassen</div>
+        <input type="hidden" id="u-edit-id" value="">
+        <div class="form-group"><label class="form-label">Name *</label><input class="form-input" id="u-name" placeholder="z.B. Anna Mayer"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Rolle</label><input class="form-input" id="u-rolle" list="rollen-list" placeholder="Leitender Prüfer"><datalist id="rollen-list"><option>Leitender Prüfer</option><option>Prüfer</option><option>Lesezugriff</option></datalist></div>
+          <div class="form-group"><label class="form-label">Status</label><input class="form-input" id="u-status" list="status-list" placeholder="Aktiv"><datalist id="status-list"><option>Aktiv</option><option>Eingeschränkt</option><option>Inaktiv</option></datalist></div>
+        </div>
+        <div class="form-group"><label class="form-label">E-Mail</label><input class="form-input" id="u-email" placeholder="vorname.nachname@raiffeisen.at" type="email"></div>
+        <div class="form-group"><label class="form-label">Zugeordnete Unternehmen</label><input class="form-input" id="u-unternehmen" placeholder="z.B. 2" type="number" min="0"></div>
+        <div class="modal-footer">
+          <div id="u-delete-area"></div>
+          <div class="modal-footer-right">
+            <button class="btn btn-ghost" onclick="closeUserModal()">Abbrechen</button>
+            <button class="btn btn-primary" id="u-save-btn" onclick="saveUser()">Anlegen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: Benutzer löschen -->
+    <div class="modal-overlay" id="user-delete-overlay">
+      <div class="modal modal-sm" onclick="event.stopPropagation()">
+        <div class="modal-title" style="margin-bottom:10px">Benutzer löschen?</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px"><strong id="u-delete-name"></strong> wird unwiderruflich entfernt.</div>
+        <div style="display:flex;justify-content:flex-end;gap:8px">
+          <button class="btn btn-ghost" onclick="closeUserDeleteModal()">Abbrechen</button>
+          <button class="btn btn-danger" onclick="confirmUserDelete()">Endgültig löschen</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-settings">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Systemeinstellungen</div></div>
+        <div class="srow"><div><div class="srow-t">Automatische KI-Berichte</div><div class="srow-s">Bei jedem Datei-Upload automatisch Analyse starten</div></div><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tknob"></div></div></div>
+        <div class="srow"><div><div class="srow-t">E-Mail-Benachrichtigungen</div><div class="srow-s">Bei Anomalieerkennung sofort informieren</div></div><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tknob"></div></div></div>
+        <div class="srow"><div><div class="srow-t">2-Faktor-Authentifizierung</div><div class="srow-s">Sicherheitsstandard Raiffeisenverband</div></div><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tknob"></div></div></div>
+        <div class="srow"><div><div class="srow-t">Automatische Erinnerungen</div><div class="srow-s">30 Tage vor Ablauf des Prüfungszeitraums</div></div><div class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tknob"></div></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Anlegen / Bearbeiten -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modal-title">Unternehmen anlegen</div>
+    <div class="modal-sub" id="modal-sub">Stammdaten erfassen</div>
+    <input type="hidden" id="edit-id" value="">
+    <div class="form-group"><label class="form-label">Unternehmensname *</label><input class="form-input" id="f-name" placeholder="z.B. Lagerhaus Tirol GmbH"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Firmenbuchnummer</label><input class="form-input" id="f-fn" placeholder="FN 000000x"></div>
+      <div class="form-group"><label class="form-label">Rechtsform</label><input class="form-input" id="f-rf" list="rf" placeholder="GmbH, KG, eGen ..."><datalist id="rf"><option>GmbH</option><option>KG</option><option>AG</option><option>GnbR</option><option>eGen</option></datalist></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Branche</label><input class="form-input" id="f-branche" placeholder="Landwirtschaft, Handel ..."></div>
+      <div class="form-group"><label class="form-label">Zuständiger Prüfer *</label><input class="form-input" id="f-pruefer" list="pl"><datalist id="pl"><option>Manuel</option><option>Benedikt</option></datalist></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Standort</label><input class="form-input" id="f-ort" placeholder="Innsbruck, Ötztal ..."></div>
+      <div class="form-group"><label class="form-label">Prüfungsjahr</label><input class="form-input" id="f-jahr" value="2024"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Beschreibung</label><textarea class="form-input" id="f-desc" rows="2" placeholder="Kurzbeschreibung, Prüfungsanlass ..."></textarea></div>
+    <div class="form-group"><label class="form-label">Logo</label><div class="upload-z"><div style="font-size:22px;margin-bottom:6px">&#128193;</div><p>PNG oder JPG, max. 2 MB</p></div></div>
+    <div class="modal-footer">
+      <div id="modal-delete-area"></div>
+      <div class="modal-footer-right">
+        <button class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
+        <button class="btn btn-primary" id="modal-save-btn" onclick="saveCompany()">Anlegen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PDF Upload -->
+<div class="modal-overlay" id="upload-modal-overlay" onclick="if(event.target===this)closeUploadModal()">
+  <div class="modal modal-sm" onclick="event.stopPropagation()" style="width:780px;max-width:96vw">
+    <div id="up-phase-upload">
+      <div class="modal-title">Jahresabschluss hochladen</div>
+      <div class="modal-sub">PDF wird automatisch ausgelesen und in das Dashboard übernommen</div>
+      <div id="up-drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:2rem 1rem;text-align:center;cursor:pointer;background:var(--bg);margin:16px 0;transition:all 0.15s" onclick="document.getElementById('up-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--y)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="this.style.borderColor='var(--border)';upHandleFile(event)">
+        <div style="font-size:28px;margin-bottom:8px">📄</div>
+        <div style="font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:4px">PDF hier ablegen</div>
+        <div style="font-size:11.5px;color:var(--muted)">Klicken oder Drag & Drop · max. 5 MB · max. 100 Seiten</div>
+      </div>
+      <input type="file" id="up-file-input" accept=".pdf" style="display:none" onchange="upHandleFile(event)">
+      <div id="up-file-info" style="display:none;align-items:center;gap:10px;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin-bottom:12px">
+        <span style="font-size:16px">✓</span>
+        <span id="up-file-name" style="font-size:13px;color:#166534;font-weight:500"></span>
+      </div>
+      <div id="up-status" style="display:none"></div>
+      <div class="modal-footer" style="margin-top:16px">
+        <div></div>
+        <div class="modal-footer-right">
+          <button class="btn btn-ghost" onclick="closeUploadModal()">Abbrechen</button>
+          <button class="btn btn-primary" id="up-analyze-btn" onclick="upAnalyze()" disabled>Zahlen extrahieren</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 2: Vorschau der extrahierten Daten -->
+    <div id="up-phase-preview" style="display:none">
+      <!-- Demo-Modus Banner -->
+      <div id="up-demo-banner" style="display:none;align-items:flex-start;gap:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;margin-bottom:14px;line-height:1.5">
+        <span style="font-size:15px;flex-shrink:0">🔵</span>
+        <div><strong>Demo-Modus:</strong> Kein API-Key erkannt — die angezeigten Zahlen stammen aus einem Beispielabschluss (Raiffeisengenossenschaft Osttirol GJ 2024). In der Produktivumgebung mit API-Key werden echte PDF-Daten extrahiert.</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="modal-title" style="margin-bottom:2px" id="up-prev-name">–</div>
+          <div style="font-size:11.5px;color:var(--muted)" id="up-prev-meta">–</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="up-prev-badge" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:6px;padding:3px 10px;font-size:11.5px;font-weight:600">GJ –</span>
+          <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px" onclick="upBackToUpload()">← Andere Datei</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:14px">
+        <button class="up-ptab active" onclick="upSwitchTab('kpi',this)" style="padding:6px 14px;border:none;background:none;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.12s">Kennzahlen</button>
+        <button class="up-ptab" onclick="upSwitchTab('bilanz',this)" style="padding:6px 14px;border:none;background:none;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.12s">Bilanz</button>
+        <button class="up-ptab" onclick="upSwitchTab('guv',this)" style="padding:6px 14px;border:none;background:none;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.12s">GuV</button>
+        <button class="up-ptab" onclick="upSwitchTab('struktur',this)" style="padding:6px 14px;border:none;background:none;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.12s">Umsatzstruktur</button>
+      </div>
+
+      <div id="up-tab-kpi" class="up-tab-panel">
+        <div id="up-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:4px"></div>
+      </div>
+      <div id="up-tab-bilanz" class="up-tab-panel" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Aktiva</div>
+            <table class="dt" id="up-tbl-aktiva" style="font-size:12.5px"><tbody></tbody></table>
+          </div>
+          <div>
+            <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Passiva</div>
+            <table class="dt" id="up-tbl-passiva" style="font-size:12.5px"><tbody></tbody></table>
+          </div>
+        </div>
+      </div>
+      <div id="up-tab-guv" class="up-tab-panel" style="display:none">
+        <table class="dt" id="up-tbl-guv" style="font-size:12.5px;width:100%"><tbody></tbody></table>
+      </div>
+      <div id="up-tab-struktur" class="up-tab-panel" style="display:none">
+        <table class="dt" id="up-tbl-struktur" style="font-size:12.5px;width:100%"><tbody></tbody></table>
+      </div>
+
+      <div style="margin-top:14px;padding:10px 14px;background:var(--yl);border:1px solid rgba(251,186,0,0.4);border-radius:8px;font-size:12px;color:#6b4700">
+        ⚠ Bitte prüfe ob die Zahlen mit dem Original-PDF übereinstimmen bevor du überträgst.
+      </div>
+
+      <div class="modal-footer" style="margin-top:14px">
+        <div></div>
+        <div class="modal-footer-right">
+          <button class="btn btn-ghost" onclick="closeUploadModal()">Abbrechen</button>
+          <button class="btn btn-primary" id="up-confirm-btn" onclick="upConfirm()">✓ In Dashboard übernehmen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Löschen -->
+<div class="modal-overlay" id="delete-overlay">
+  <div class="modal modal-sm" onclick="event.stopPropagation()">
+    <div class="modal-title" style="margin-bottom:10px">Unternehmen löschen?</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Das Unternehmen <strong id="delete-name"></strong> und alle zugehörigen Daten werden unwiderruflich entfernt.</div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn btn-ghost" onclick="closeDeleteModal()">Abbrechen</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Endgültig löschen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── USERS ──
+let nextUserId=4;
+let pendingUserDeleteId=null;
+let users=[
+  {id:"1",name:"Manuel Huber",rolle:"Leitender Prüfer",status:"Aktiv",email:"manuel.huber@raiffeisen.at",unternehmen:2,login:"Heute, 09:14"},
+  {id:"2",name:"Benedikt Mair",rolle:"Leitender Prüfer",status:"Aktiv",email:"benedikt.mair@raiffeisen.at",unternehmen:2,login:"Heute, 08:30"},
+  {id:"3",name:"S. Moser",rolle:"Lesezugriff",status:"Eingeschränkt",email:"s.moser@raiffeisen.at",unternehmen:2,login:"vor 3 Tagen"}
+];
+
+function statusTag(s){
+  if(s==="Aktiv") return '<span class="tag tg">Aktiv</span>';
+  if(s==="Eingeschränkt") return '<span class="tag ta">Eingeschr\u00e4nkt</span>';
+  return '<span class="tag tr">Inaktiv</span>';
+}
+
+function renderUsers(){
+  const tb=document.getElementById("users-tbody");
+  if(!tb) return;
+  tb.innerHTML=users.map(u=>`<tr>
+    <td><strong>${u.name}</strong><div style="font-size:11px;color:var(--muted);margin-top:1px">${u.email}</div></td>
+    <td>${u.rolle}</td>
+    <td>${u.unternehmen}</td>
+    <td>${u.login}</td>
+    <td>${statusTag(u.status)}</td>
+    <td style="text-align:right">
+      <button class="btn btn-ghost" style="font-size:11.5px;padding:4px 10px" onclick="openUserEditModal('${u.id}')">&#9998; Bearbeiten</button>
+    </td>
+  </tr>`).join("");
+}
+
+function openUserModal(){
+  document.getElementById("u-edit-id").value="";
+  document.getElementById("user-modal-title").textContent="Benutzer anlegen";
+  document.getElementById("user-modal-sub").textContent="Zugangsdaten erfassen";
+  document.getElementById("u-save-btn").textContent="Anlegen";
+  document.getElementById("u-delete-area").innerHTML="";
+  ["u-name","u-rolle","u-status","u-email"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("u-unternehmen").value="0";
+  document.getElementById("user-modal-overlay").classList.add("open");
+}
+function openUserEditModal(id){
+  const u=users.find(x=>x.id===id);
+  document.getElementById("u-edit-id").value=id;
+  document.getElementById("user-modal-title").textContent="Benutzer bearbeiten";
+  document.getElementById("user-modal-sub").textContent=u.name;
+  document.getElementById("u-save-btn").textContent="Speichern";
+  document.getElementById("u-name").value=u.name;
+  document.getElementById("u-rolle").value=u.rolle;
+  document.getElementById("u-status").value=u.status;
+  document.getElementById("u-email").value=u.email;
+  document.getElementById("u-unternehmen").value=u.unternehmen;
+  document.getElementById("u-delete-area").innerHTML=`<button class="btn btn-danger" onclick="openUserDeleteModal('${id}');closeUserModal()">L\u00f6schen</button>`;
+  document.getElementById("user-modal-overlay").classList.add("open");
+}
+function closeUserModal(){document.getElementById("user-modal-overlay").classList.remove("open");}
+document.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("user-modal-overlay").addEventListener("click",function(e){if(e.target===this)closeUserModal();});
+  document.getElementById("user-delete-overlay").addEventListener("click",function(e){if(e.target===this)closeUserDeleteModal();});
+});
+
+function saveUser(){
+  const id=document.getElementById("u-edit-id").value;
+  const name=document.getElementById("u-name").value.trim()||"Neuer Benutzer";
+  const rolle=document.getElementById("u-rolle").value.trim()||"Lesezugriff";
+  const status=document.getElementById("u-status").value.trim()||"Aktiv";
+  const email=document.getElementById("u-email").value.trim()||"–";
+  const unternehmen=parseInt(document.getElementById("u-unternehmen").value)||0;
+  if(id){
+    const idx=users.findIndex(x=>x.id===id);
+    if(idx>=0) users[idx]={...users[idx],name,rolle,status,email,unternehmen};
+  } else {
+    users.push({id:String(nextUserId++),name,rolle,status,email,unternehmen,login:"Gerade angelegt"});
+  }
+  closeUserModal();renderUsers();
+}
+
+function openUserDeleteModal(id){
+  pendingUserDeleteId=id;
+  const u=users.find(x=>x.id===id);
+  document.getElementById("u-delete-name").textContent=u?u.name:"";
+  document.getElementById("user-delete-overlay").classList.add("open");
+}
+function closeUserDeleteModal(){document.getElementById("user-delete-overlay").classList.remove("open");pendingUserDeleteId=null;}
+function confirmUserDelete(){
+  users=users.filter(x=>x.id!==pendingUserDeleteId);
+  closeUserDeleteModal();renderUsers();
+}
+
+let nextId=5;
+let companies=[];
+let currentDetailId=null,pendingDeleteId=null;
+const ci={};
+
+function renderGrids(){
+  const all=document.getElementById("all-company-grid"),dash=document.getElementById("dash-company-grid");
+  all.innerHTML="";dash.innerHTML="";
+  companies.forEach(c=>{all.appendChild(makeCard(c,true));});
+  const a=document.createElement("div");a.className="add-co";
+  a.innerHTML="<svg width=\'26\' height=\'26\' viewBox=\'0 0 26 26\' fill=\'none\'><circle cx=\'13\' cy=\'13\' r=\'12\' stroke=\'currentColor\' stroke-width=\'1.4\'/><line x1=\'13\' y1=\'7\' x2=\'13\' y2=\'19\' stroke=\'currentColor\' stroke-width=\'1.8\' stroke-linecap=\'round\'/><line x1=\'7\' y1=\'13\' x2=\'19\' y2=\'13\' stroke=\'currentColor\' stroke-width=\'1.8\' stroke-linecap=\'round\'/></svg><span>Unternehmen hinzuf\u00fcgen</span>";
+  a.onclick=()=>openModal();all.appendChild(a);
+  companies.slice(0,3).forEach(c=>dash.appendChild(makeCard(c,false)));
+  document.getElementById("nav-count").textContent=companies.length;
+  document.getElementById("dash-count").textContent=companies.length;
+}
+
+function makeCard(c,showActions){
+  const div=document.createElement("div");div.className="co-card";
+  const negStyle=c.ebitda.startsWith("-")?"color:var(--red)":"";
+  div.innerHTML=(showActions?`<div class="co-actions"><div class="co-action-btn edit" title="Bearbeiten" onclick="event.stopPropagation();openEditModal('${c.id}')">&#9998;</div><div class="co-action-btn del" title="L\u00f6schen" onclick="event.stopPropagation();openDeleteModal('${c.id}')">&#10005;</div></div>`:"")
+    +`<div style="display:flex;align-items:center;gap:11px;margin-bottom:12px"><div class="co-logo" style="background:${c.bg};color:${c.tc}">${c.abbr}</div><div><div class="co-name">${c.name}</div><div class="co-meta" style="display:flex;align-items:center;gap:5px"><span class="dot ${c.status}"></span> ${c.statusLabel} &middot; ${c.pruefer}</div></div></div>`
+    +`<div class="co-stats"><div><div class="co-stat-val">${c.umsatz}</div><div class="co-stat-lbl">Umsatz</div></div><div><div class="co-stat-val" style="${negStyle}">${c.ebitda}</div><div class="co-stat-lbl">EBITDA</div></div><div><div class="co-stat-val">${c.abschluss}</div><div class="co-stat-lbl">Abschluss</div></div></div>`;
+  div.addEventListener("click",()=>openCompany(c.id));
+  return div;
+}
+
+const vmeta={dashboard:["\u00dcbersicht","Raiffeisenverband Tirol \u00b7 Pr\u00fcfungsportal \u00b7 Juni 2025"],companies:["Unternehmen","Alle gepr\u00fcften Betriebe"],users:["Benutzer & Pr\u00fcfer","Zugangsverwaltung"],datasources:["Datenquellen","Import-Formate"],settings:["Einstellungen","Systemkonfiguration"]};
+
+function switchView(v){
+  document.querySelectorAll(".view").forEach(e=>e.classList.remove("active"));
+  document.getElementById("view-"+v).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(e=>e.classList.toggle("active",e.dataset.view===v));
+  const m=vmeta[v];if(m){document.getElementById("topbar-title").textContent=m[0];document.getElementById("topbar-sub").textContent=m[1];}
+  const pdfBtn=document.getElementById("btn-export-pdf");
+  if(pdfBtn) pdfBtn.style.display="none";
+}
+document.querySelectorAll(".nav-item").forEach(el=>el.addEventListener("click",()=>{if(el.dataset.view)switchView(el.dataset.view);}));
+document.querySelectorAll(".rtab").forEach(el=>el.addEventListener("click",()=>{if(el.dataset.report)switchReport(el.dataset.report);}));
+document.getElementById("btn-add").addEventListener("click",()=>openModal());
+
+function openCompany(id){
+  currentDetailId=id;const c=companies.find(x=>x.id===id);
+  const l=document.getElementById("detail-logo");l.textContent=c.abbr;l.style.background=c.bg;l.style.color=c.tc;
+  document.getElementById("detail-name").textContent=c.name;
+  const meta=c.fn+" \u00b7 "+c.ort+" \u00b7 Pr\u00fcfer: "+c.pruefer;
+  document.getElementById("detail-meta").textContent=meta;
+  document.getElementById("bc-name").textContent=c.name;
+  document.getElementById("topbar-title").textContent=c.name;
+  document.getElementById("topbar-sub").textContent=meta;
+  document.getElementById("detail-edit-btn").onclick=()=>openEditModal(id);
+  document.querySelectorAll(".view").forEach(e=>e.classList.remove("active"));
+  document.getElementById("view-company-detail").classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(e=>e.classList.toggle("active",e.dataset.view==="companies"));
+  const pdfBtn=document.getElementById("btn-export-pdf");
+  if(pdfBtn) pdfBtn.style.display="inline-flex";
+  // Reset chart cache
+  Object.keys(ci).forEach(k=>{ ci[k]=false; });
+  // Render uploaded Abschluesse list
+  renderAbschlusseListe(c);
+  // update KPI cards — always reset first, then fill if data exists
+  const kv=document.querySelectorAll(".kpi-val");
+  const kb=document.querySelectorAll(".kpi-bench");
+  const fills=document.querySelectorAll(".kpi-fill");
+  if(!c.kpi){
+    kv.forEach(el=>{el.textContent="–";el.className="kpi-val";});
+    kb.forEach(el=>{el.textContent="Kein Abschluss hochgeladen";});
+    fills.forEach(el=>{el.style.width="0%";el.style.background="var(--subtle)";});
+  } else {
+    const benchmarks=[
+      {val:c.kpi.umsatzrendite,bench:"Benchmark > 5%",cls:parseFloat(c.kpi.umsatzrendite)>=5?"g":"b"},
+      {val:c.kpi.ebitda,bench:"Benchmark > 7%",cls:parseFloat(c.kpi.ebitda)>=7?"g":parseFloat(c.kpi.ebitda)>=4?"w":"b"},
+      {val:c.kpi.ek,bench:"Benchmark > 30%",cls:parseFloat(c.kpi.ek)>=30?"g":parseFloat(c.kpi.ek)>=20?"w":"b"},
+      {val:c.kpi.verschuldung,bench:"Benchmark < 2,5x",cls:parseFloat(c.kpi.verschuldung)<=2.5?"g":parseFloat(c.kpi.verschuldung)<=3.5?"w":"b"},
+      {val:c.kpi.current,bench:"Benchmark > 1,5",cls:parseFloat(c.kpi.current)>=1.5?"g":parseFloat(c.kpi.current)>=1?"w":"b"},
+      {val:c.kpi.personal,bench:"Benchmark < 32%",cls:parseFloat(c.kpi.personal)<=32?"g":parseFloat(c.kpi.personal)<=38?"w":"b"},
+      {val:c.kpi.cashflow,bench:"",cls:(c.kpi.cashflow||"").startsWith("-")?"b":"g"},
+      {val:c.kpi.debitoren,bench:"Benchmark < 45 Tage",cls:parseInt(c.kpi.debitoren)<=45?"g":parseInt(c.kpi.debitoren)<=55?"w":"b"},
+    ];
+    kv.forEach((el,i)=>{ if(benchmarks[i]){el.textContent=benchmarks[i].val||"–";el.className="kpi-val "+benchmarks[i].cls;} });
+    kb.forEach((el,i)=>{ if(benchmarks[i]) el.textContent=benchmarks[i].bench; });
+    const widths=[
+      Math.min(100,Math.max(0,parseFloat(c.kpi.umsatzrendite)/10*100)),
+      Math.min(100,Math.max(0,parseFloat(c.kpi.ebitda)/15*100)),
+      Math.min(100,Math.max(0,parseFloat(c.kpi.ek)/60*100)),
+      Math.min(100,Math.max(0,(4-parseFloat(c.kpi.verschuldung))/4*100)),
+      Math.min(100,Math.max(0,parseFloat(c.kpi.current)/4*100)),
+      Math.min(100,Math.max(0,(50-parseFloat(c.kpi.personal))/50*100)),
+      (c.kpi.cashflow||"").startsWith("-")?10:70,
+      Math.min(100,Math.max(0,(60-parseInt(c.kpi.debitoren))/60*100)),
+    ];
+    fills.forEach((el,i)=>{ if(widths[i]!==undefined){el.style.width=widths[i]+"%"; const cls=benchmarks[i]?benchmarks[i].cls:"g"; el.style.background=cls==="g"?"var(--green)":cls==="w"?"var(--amber)":"var(--red)";} });
+  }
+  // update GuV table — always reset first
+  const guvRows=document.querySelectorAll("#report-guv .dt tbody tr");
+  if(!c.charts||!c.charts.guv){
+    guvRows.forEach(tr=>{
+      const tds=tr.querySelectorAll("td");
+      if(tds[1]) tds[1].textContent="–";
+      if(tds[2]) tds[2].textContent="–";
+      if(tds[3]){tds[3].textContent="–";tds[3].style.color="";}
+      if(tds[4]){const sp=tds[4].querySelector("span");if(sp){sp.textContent="–";sp.className="tag";}}
+    });
+  } else {
+    const g=c.charts.guv;
+    guvRows.forEach((tr,i)=>{
+      if(g.pos&&g.pos[i]){
+        const tds=tr.querySelectorAll("td");
+        if(tds[1]) tds[1].textContent=g.y23[i]||"–";
+        if(tds[2]) tds[2].textContent=g.y24[i]||"–";
+        if(tds[3]){tds[3].textContent=g.chg[i]||"–";tds[3].style.color=g.dir[i]==="g"?"var(--green)":"var(--red)";}
+        if(tds[4]){const sp=tds[4].querySelector("span");if(sp){sp.textContent=g.pct[i]||"–";sp.className="tag "+(g.dir[i]==="g"?"tg":g.dir[i]==="a"?"ta":"tr");}}
+      }
+    });
+  }
+  switchReport("rohdaten");
+}
+
+function switchReport(r){
+  document.querySelectorAll(".report-content").forEach(e=>e.style.display="none");
+  document.querySelectorAll(".rtab").forEach(e=>e.classList.remove("active"));
+  document.getElementById("report-"+r).style.display="block";
+  const t=document.querySelector("[data-report=\""+r+"\"]");if(t)t.classList.add("active");
+  initCharts(r);
+  if(r==='notizen') loadNote(currentDetailId);
+}
+
+function openModal(){
+  document.getElementById("edit-id").value="";
+  document.getElementById("modal-title").textContent="Unternehmen anlegen";
+  document.getElementById("modal-sub").textContent="Stammdaten erfassen";
+  document.getElementById("modal-save-btn").textContent="Anlegen";
+  document.getElementById("modal-delete-area").innerHTML="";
+  ["f-name","f-fn","f-rf","f-branche","f-pruefer","f-ort","f-desc"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("f-jahr").value="2024";
+  document.getElementById("modal-overlay").classList.add("open");
+}
+function openEditModal(id){
+  const c=companies.find(x=>x.id===id);
+  document.getElementById("edit-id").value=id;
+  document.getElementById("modal-title").textContent="Unternehmen bearbeiten";
+  document.getElementById("modal-sub").textContent=c.name;
+  document.getElementById("modal-save-btn").textContent="Speichern";
+  document.getElementById("f-name").value=c.name;
+  document.getElementById("f-fn").value=c.fn;
+  document.getElementById("f-rf").value="";
+  document.getElementById("f-branche").value="";
+  document.getElementById("f-pruefer").value=c.pruefer;
+  document.getElementById("f-ort").value=c.ort;
+  document.getElementById("f-jahr").value=c.abschluss;
+  document.getElementById("f-desc").value="";
+  document.getElementById("modal-delete-area").innerHTML=`<button class="btn btn-danger" onclick="openDeleteModal('${id}');closeModal()">L\u00f6schen</button>`;
+  document.getElementById("modal-overlay").classList.add("open");
+}
+function closeModal(){document.getElementById("modal-overlay").classList.remove("open");}
+document.getElementById("modal-overlay").addEventListener("click",function(e){if(e.target===this)closeModal();});
+
+function saveCompany(){
+  const id=document.getElementById("edit-id").value;
+  const name=document.getElementById("f-name").value.trim()||"Neues Unternehmen";
+  const pruefer=document.getElementById("f-pruefer").value.trim()||"Manuel";
+  const ort=document.getElementById("f-ort").value.trim()||"–";
+  const fn=document.getElementById("f-fn").value.trim()||"–";
+  const abbr=name.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
+  const palettes=[{bg:"var(--y)",tc:"#4a3300"},{bg:"#e8eef8",tc:"#1a3a6a"},{bg:"#e8f4ee",tc:"#1a5a34"},{bg:"#f3e8f8",tc:"#4a1a6a"},{bg:"#fde8e8",tc:"#7a1a10"},{bg:"#e8f8f8",tc:"#1a5a5a"}];
+  if(id){
+    const idx=companies.findIndex(x=>x.id===id);
+    if(idx>=0){companies[idx]={...companies[idx],name,pruefer,ort,fn};}
+    if(currentDetailId===id)openCompany(id);
+  } else {
+    const p=palettes[companies.length%palettes.length];
+    companies.push({
+      id:String(nextId++),name,abbr,bg:p.bg,tc:p.tc,fn,ort,pruefer,
+      status:"n",statusLabel:"Kein Abschluss",umsatz:"–",ebitda:"–",abschluss:"–",
+      abschluesse:[],activeAbschlussIdx:null,kpi:null,charts:null
+    });
+  }
+  closeModal();renderGrids();
+}
+
+function openDeleteModal(id){
+  pendingDeleteId=id;const c=companies.find(x=>x.id===id);
+  document.getElementById("delete-name").textContent=c?c.name:"";
+  document.getElementById("delete-overlay").classList.add("open");
+}
+function closeDeleteModal(){document.getElementById("delete-overlay").classList.remove("open");pendingDeleteId=null;}
+document.getElementById("delete-overlay").addEventListener("click",function(e){if(e.target===this)closeDeleteModal();});
+function confirmDelete(){
+  companies=companies.filter(x=>x.id!==pendingDeleteId);
+  if(currentDetailId===pendingDeleteId)switchView("companies");
+  closeDeleteModal();renderGrids();
+}
+// ── PDF UPLOAD & EXTRAKTION ──
+let _uploadPdfB64=null;
+function fakeUpload(){openUploadModal();}
+let _pendingExtractedData=null;
+
+function openUploadModal(){
+  _uploadPdfB64=null; _pendingExtractedData=null;
+  window._lastUploadFilename='';
+  document.getElementById('up-file-info').style.display='none';
+  document.getElementById('up-analyze-btn').disabled=true;
+  document.getElementById('up-status').style.display='none';
+  document.getElementById('up-file-input').value='';
+  document.getElementById('up-phase-upload').style.display='block';
+  document.getElementById('up-phase-preview').style.display='none';
+  document.getElementById('upload-modal-overlay').classList.add('open');
+}
+function closeUploadModal(){document.getElementById('upload-modal-overlay').classList.remove('open');}
+function upBackToUpload(){
+  document.getElementById('up-phase-upload').style.display='block';
+  document.getElementById('up-phase-preview').style.display='none';
+}
+function upHandleFile(e){
+  const file=e.target.files[0]||e.dataTransfer&&e.dataTransfer.files[0];
+  if(!file||file.type!=='application/pdf') return;
+  window._lastUploadFilename=file.name;
+  document.getElementById('up-file-name').textContent=file.name+' ('+Math.round(file.size/1024)+' KB)';
+  document.getElementById('up-file-info').style.display='flex';
+  document.getElementById('up-analyze-btn').disabled=false;
+  const r=new FileReader();
+  r.onload=()=>{_uploadPdfB64=r.result.split(',')[1];};
+  r.readAsDataURL(file);
+}
+function upSetStatus(type,msg){
+  const el=document.getElementById('up-status');
+  el.style.display='flex';
+  if(type==='loading'){el.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe';el.innerHTML='<div style="width:16px;height:16px;border:2px solid #bfdbfe;border-top-color:#1d4ed8;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></div><span>'+msg+'</span>';}
+  else{el.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca';el.innerHTML='<span>'+msg+'</span>';}
+}
+function upSwitchTab(id,btn){
+  document.querySelectorAll('.up-tab-panel').forEach(p=>p.style.display='none');
+  document.getElementById('up-tab-'+id).style.display='block';
+  document.querySelectorAll('.up-ptab').forEach(b=>{b.style.color='var(--muted)';b.style.borderBottomColor='transparent';b.style.fontWeight='500';});
+  btn.style.color='var(--amber)';btn.style.borderBottomColor='var(--y)';btn.style.fontWeight='600';
+}
+function upRenderPreview(d){
+  const g=d.guv||{};const b=d.bilanz||{};
+  const fE=fmtEURfull;
+  // Header
+  document.getElementById('up-prev-name').textContent=d.unternehmen||'Unbekannt';
+  document.getElementById('up-prev-meta').textContent=[d.rechtsform,d.sitz].filter(Boolean).join(' · ')||'';
+  document.getElementById('up-prev-badge').textContent='GJ '+(d.geschaeftsjahr||'–');
+  // KPI grid
+  const ekQ=b.eigenkapital&&b.bilanzsumme?(b.eigenkapital/b.bilanzsumme*100):null;
+  const umsR=g.jahresueberschuss&&g.umsatz?(g.jahresueberschuss/g.umsatz*100):null;
+  const ebitda=(g.ebit!=null&&g.abschreibungen!=null)?(g.ebit+g.abschreibungen):g.ebit;
+  const ebitdaM=ebitda&&g.umsatz?(ebitda/g.umsatz*100):null;
+  const perQ=g.personalaufwand&&g.umsatz?(g.personalaufwand/g.umsatz*100):null;
+  const fkVal=b.bilanzsumme&&b.eigenkapital?(b.bilanzsumme-b.eigenkapital):null;
+  const verschuld=fkVal&&b.eigenkapital?(fkVal/b.eigenkapital):null;
+  const kpis=[
+    {l:'Bilanzsumme',v:fE(b.bilanzsumme),c:'#1d4ed8'},
+    {l:'Umsatzerlöse',v:fE(g.umsatz),c:'#374151'},
+    {l:'Jahresüberschuss',v:fE(g.jahresueberschuss),c:(g.jahresueberschuss||0)>=0?'var(--green)':'var(--red)'},
+    {l:'EBIT',v:fE(g.ebit),c:(g.ebit||0)>=0?'var(--green)':'var(--red)'},
+    {l:'Eigenkapital',v:fE(b.eigenkapital),c:'#1d4ed8'},
+    {l:'EK-Quote',v:ekQ!=null?fmtDE(ekQ,2)+'%':'–',c:ekQ>=30?'var(--green)':'var(--amber)'},
+    {l:'Umsatzrendite',v:umsR!=null?fmtDE(umsR,2)+'%':'–',c:umsR>=5?'var(--green)':'var(--amber)'},
+    {l:'EBITDA-Marge',v:ebitdaM!=null?fmtDE(ebitdaM,2)+'%':'–',c:ebitdaM>=7?'var(--green)':'var(--amber)'},
+    {l:'Personalquote',v:perQ!=null?fmtDE(perQ,2)+'%':'–',c:perQ<=32?'var(--green)':'var(--amber)'},
+    {l:'Verschuldungsgrad',v:verschuld!=null?fmtDE(verschuld,2)+'x':'–',c:verschuld<=2.5?'var(--green)':'var(--amber)'},
+    {l:'Mitarbeiter',v:d.mitarbeiter!=null?fmtDE(d.mitarbeiter,0):'–',c:'#374151'},
+    {l:'Abschreibungen',v:fE(g.abschreibungen),c:'#374151'},
+  ];
+  document.getElementById('up-kpi-grid').innerHTML=kpis.map(k=>`
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+      <div style="font-size:10.5px;color:var(--muted);font-weight:500;margin-bottom:5px">${k.l}</div>
+      <div style="font-size:15px;font-weight:700;color:${k.c};font-variant-numeric:tabular-nums">${k.v}</div>
+    </div>`).join('');
+  // Bilanz tables
+  function tblRows(rows){return rows.map(([l,v,bold])=>`<tr><td style="${bold?'font-weight:600':''}">${l}</td><td style="text-align:right;font-variant-numeric:tabular-nums;${bold?'font-weight:600':''}">${v}</td></tr>`).join('');}
+  document.getElementById('up-tbl-aktiva').innerHTML=tblRows([
+    ['Anlagevermögen',fE(b.anlagevermoegen)],
+    ['Umlaufvermögen',fE(b.umlaufvermoegen)],
+    ['  davon Vorräte',fE(b.vorraeate)],
+    ['  davon Forderungen',fE(b.forderungen)],
+    ['  davon Kassenbestand',fE(b.kassenbestand)],
+    ['Bilanzsumme',fE(b.bilanzsumme),true],
+  ]);
+  document.getElementById('up-tbl-passiva').innerHTML=tblRows([
+    ['Eigenkapital',fE(b.eigenkapital)],
+    ['Rückstellungen',fE(b.rueckstellungen)],
+    ['Verbindlichkeiten',fE(b.verbindlichkeiten)],
+    ['Fremdkapital ges.',fE(fkVal)],
+    ['Bilanzsumme',fE(b.bilanzsumme),true],
+  ]);
+  // GuV table
+  const gjahr=d.geschaeftsjahr||'2024';const vjahr=String(parseInt(gjahr)-1);
+  document.getElementById('up-tbl-guv').innerHTML=`<thead><tr><th>Position</th><th style="text-align:right">${vjahr}</th><th style="text-align:right">${gjahr}</th></tr></thead><tbody>`+[
+    ['Umsatzerlöse',fE(g.vorjahr_umsatz),fE(g.umsatz)],
+    ['+ Sonst. betr. Erträge','–',fE(g.sonstige_betr_ertraege)],
+    ['− Materialaufwand','–',fE(g.materialaufwand)],
+    ['− Personalaufwand','–',fE(g.personalaufwand)],
+    ['− Abschreibungen','–',fE(g.abschreibungen)],
+    ['− Sonst. betr. Aufwend.','–',fE(g.sonstige_betr_aufwend)],
+    ['= EBIT','–',fE(g.ebit),true],
+    ['± Finanzergebnis','–',fE(g.finanzergebnis)],
+    ['= EBT','–',fE(g.ebt),true],
+    ['− Steuern','–',fE(g.steuern)],
+    ['= Jahresüberschuss','–',fE(g.jahresueberschuss),true],
+  ].map(([l,vj,cj,bold])=>`<tr><td style="${bold?'font-weight:600':''}">${l}</td><td style="text-align:right;color:var(--muted)">${vj}</td><td style="text-align:right;font-variant-numeric:tabular-nums;${bold?'font-weight:600;color:'+(parseFloat(cj)<0?'var(--red)':'var(--green)'):'color:var(--text)'}">${cj}</td></tr>`).join('')+'</tbody>';
+  // Struktur table
+  const sparten=d.umsatz_sparten||[];
+  if(sparten.length>0){
+    document.getElementById('up-tbl-struktur').innerHTML='<thead><tr><th>Sparte</th><th style="text-align:right">Vorjahr</th><th style="text-align:right">'+gjahr+'</th></tr></thead><tbody>'+
+      sparten.map(s=>`<tr><td>${s.name}</td><td style="text-align:right;color:var(--muted)">${s.vorjahr_eur?fE(s.vorjahr_eur):'–'}</td><td style="text-align:right">${s.betrag_eur?fE(s.betrag_eur):'–'}</td></tr>`).join('')+'</tbody>';
+  } else {
+    document.getElementById('up-tbl-struktur').innerHTML='<tbody><tr><td colspan="3" style="color:var(--muted);padding:16px;text-align:center">Keine Spartendaten im Abschluss gefunden</td></tr></tbody>';
+  }
+}
+function upConfirm(){
+  if(!_pendingExtractedData||!currentDetailId) return;
+  const c=companies.find(x=>x.id===currentDetailId);
+  if(!c) return;
+  applyExtractedData(c,_pendingExtractedData);
+  closeUploadModal();
+  openCompany(c.id);
+}
+// ── PROXY-KONFIGURATION ──────────────────────────────────────
+const PROXY_URL = '/api/claude';
+const PROXY_STATUS_URL = '/api/status';
+
+// ── API-KEY VERWALTUNG ───────────────────────────────────────
+function getApiKey() { return null; }
+function saveApiKey() {}
+function clearApiKey() {}
+
+async function checkProxy() {
+  const dot   = document.getElementById('proxy-dot');
+  const label = document.getElementById('proxy-label');
+  try {
+    const r = await fetch(PROXY_STATUS_URL, { signal: AbortSignal.timeout(4000) });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.ok) {
+        dot.style.background = '#2e7d52';
+        label.style.color    = '#2e7d52';
+        label.textContent    = 'KI bereit';
+        return true;
+      } else {
+        dot.style.background = '#c0392b';
+        label.style.color    = '#c0392b';
+        label.textContent    = 'Kein API-Key';
+        return false;
+      }
+    }
+  } catch (_) {}
+  dot.style.background = '#e5a800';
+  label.style.color    = '#a06800';
+  label.textContent    = 'Demo-Modus';
+  return false;
+}
+checkProxy();
+setInterval(checkProxy, 10000);
+
+// ── API-KEY EINGABE MODAL ────────────────────────────────────
+function openApiKeyModal() {
+  const existing = getApiKey();
+  document.getElementById('apikey-input').value = existing || '';
+  document.getElementById('apikey-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('apikey-input').focus(), 100);
+}
+function closeApiKeyModal() {
+  document.getElementById('apikey-modal-overlay').classList.remove('open');
+}
+function saveApiKeyFromModal() {
+  const val = document.getElementById('apikey-input').value.trim();
+  if (!val) { alert('Bitte einen API-Key eingeben.'); return; }
+  if (!val.startsWith('sk-ant-')) { alert('Ungültiger Key — muss mit sk-ant- beginnen.'); return; }
+  saveApiKey(val);
+  closeApiKeyModal();
+  checkProxy();
+}
+function removeApiKey() {
+  clearApiKey();
+  closeApiKeyModal();
+  checkProxy();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('proxy-status').style.cursor = 'pointer';
+  document.getElementById('proxy-status').title = 'Klicken um API-Key einzutragen';
+  document.getElementById('proxy-status').addEventListener('click', openApiKeyModal);
+  document.getElementById('apikey-modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeApiKeyModal();
+  });
+});
+
+// ── DEMO-DATEN: Raiffeisengenossenschaft Osttirol ────────────
+const DEMO_DATA={
+  unternehmen:'Raiffeisengenossenschaft Osttirol',rechtsform:'reg.Gen.m.b.H.',sitz:'Lienz',geschaeftsjahr:'2024',mitarbeiter:44,
+  guv:{umsatz:29473689.26,vorjahr_umsatz:30656000,materialaufwand:23898751.29,personalaufwand:2662264.18,abschreibungen:727041.56,
+    sonstige_betr_aufwend:2377973.58,sonstige_betr_ertraege:840368.11,ebit:648026.76,finanzergebnis:6950.82,ebt:654977.58,
+    steuern:108092.89,jahresueberschuss:546884.69},
+  bilanz:{bilanzsumme:30004761.35,anlagevermoegen:24449748.79,umlaufvermoegen:5540720.61,vorraeate:780121.64,
+    forderungen:2517750.78,kassenbestand:2242848.19,eigenkapital:25831852.29,rueckstellungen:1743489.29,verbindlichkeiten:2053675.18},
+  umsatz_sparten:[{name:'Warenhandel',betrag_eur:18200000,vorjahr_eur:19100000},{name:'Lagerhaltung',betrag_eur:6800000,vorjahr_eur:7000000},{name:'Dienstleistungen',betrag_eur:4473689,vorjahr_eur:4556000}]
+};
+
+async function upAnalyze(){
+  if(!_uploadPdfB64||!currentDetailId) return;
+  const c=companies.find(x=>x.id===currentDetailId);
+  if(!c) return;
+  document.getElementById('up-analyze-btn').disabled=true;
+
+  // ── Schritt 1: prüfen ob API-Key vorhanden ──
+  upSetStatus('loading','API-Key wird geprüft…');
+  const proxyOk = await checkProxy();
+  const apiKey = null;
+
+  if(!proxyOk){
+    // ── DEMO-MODUS: simulierter Ablauf mit echten Beispieldaten ──
+    upSetStatus('loading','Demo-Modus: Beispieldaten werden geladen…');
+    await new Promise(r=>setTimeout(r,800));
+    upSetStatus('loading','Zahlen werden aufbereitet…');
+    await new Promise(r=>setTimeout(r,700));
+    // Dateinamen aus Upload übernehmen, aber Daten sind Demo
+    const d={...DEMO_DATA};
+    // Unternehmensnamen aus Dateiname ableiten wenn möglich
+    const fname=(window._lastUploadFilename||'').replace(/\.pdf$/i,'').replace(/[-_]/g,' ');
+    if(fname.length>4) d.unternehmen=fname.charAt(0).toUpperCase()+fname.slice(1);
+    _pendingExtractedData=d;
+    document.getElementById('up-status').style.display='none';
+    // Demo-Hinweisbanner einfügen
+    const banner=document.getElementById('up-demo-banner');
+    if(banner) banner.style.display='flex';
+    document.getElementById('up-phase-upload').style.display='none';
+    document.getElementById('up-phase-preview').style.display='block';
+    upRenderPreview(d);
+    return;
+  }
+
+  // ── LIVE-MODUS: über lokalen Proxy ──
+  const prompt='Du bist Wirtschaftspruefer. Analysiere den oesterreichischen Jahresabschluss (UGB). Antworte NUR mit validem JSON ohne Markdown.\n{"unternehmen":"Name","rechtsform":"z.B. reg.Gen.m.b.H.","sitz":"Ort","geschaeftsjahr":"2024","guv":{"umsatz":Zahl,"materialaufwand":Zahl,"personalaufwand":Zahl,"abschreibungen":Zahl,"sonstige_betr_aufwend":Zahl,"sonstige_betr_ertraege":Zahl,"ebit":Zahl,"finanzergebnis":Zahl,"ebt":Zahl,"steuern":Zahl,"jahresueberschuss":Zahl,"vorjahr_umsatz":Zahl},"bilanz":{"bilanzsumme":Zahl,"anlagevermoegen":Zahl,"umlaufvermoegen":Zahl,"vorraeate":Zahl,"forderungen":Zahl,"kassenbestand":Zahl,"eigenkapital":Zahl,"rueckstellungen":Zahl,"verbindlichkeiten":Zahl},"mitarbeiter":Zahl,"umsatz_sparten":[{"name":"Spartenname","betrag_eur":Zahl,"vorjahr_eur":Zahl}]}\nAlle Betraege in EUR (nicht TEUR). Fehlende Werte als null.';
+  try{
+    upSetStatus('loading','PDF wird an Claude gesendet…');
+    const resp=await fetch(PROXY_URL,{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2500,
+        messages:[{role:'user',content:[
+          {type:'document',source:{type:'base64',media_type:'application/pdf',data:_uploadPdfB64}},
+          {type:'text',text:prompt}
+        ]}]
+      })
+    });
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||'API Fehler '+resp.status);}
+    upSetStatus('loading','Zahlen werden aufbereitet…');
+    const data=await resp.json();
+    const raw=data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    const d=JSON.parse(raw);
+    _pendingExtractedData=d;
+    document.getElementById('up-status').style.display='none';
+    const banner=document.getElementById('up-demo-banner');
+    if(banner) banner.style.display='none';
+    document.getElementById('up-phase-upload').style.display='none';
+    document.getElementById('up-phase-preview').style.display='block';
+    upRenderPreview(d);
+  }catch(err){upSetStatus('error','Fehler: '+err.message);document.getElementById('up-analyze-btn').disabled=false;}
+}
+function fmtDE(val,dec){if(val===null||val===undefined)return '\u2013';return new Intl.NumberFormat('de-AT',{minimumFractionDigits:dec||0,maximumFractionDigits:dec||0}).format(val);}
+function fmtEURfull(val){if(val===null||val===undefined)return '\u2013';return '\u20ac '+fmtDE(val,2);}
+function fmtMio(val){if(val===null||val===undefined)return '\u2013';if(Math.abs(val)>=1e6)return '\u20ac '+fmtDE(val/1e6,3)+' Mio.';if(Math.abs(val)>=1000)return '\u20ac '+fmtDE(val/1000,1)+' Tsd.';return '\u20ac '+fmtDE(val,2);}
+function applyExtractedData(c,d){
+  const g=d.guv||{};const b=d.bilanz||{};
+  c.umsatz=g.umsatz?fmtMio(g.umsatz):c.umsatz;
+  c.abschluss=d.geschaeftsjahr||c.abschluss;
+  if(d.unternehmen&&d.unternehmen.length>2)c.name=d.unternehmen;
+  const ekQ=b.eigenkapital&&b.bilanzsumme?(b.eigenkapital/b.bilanzsumme*100):null;
+  const umsRend=g.jahresueberschuss&&g.umsatz?(g.jahresueberschuss/g.umsatz*100):null;
+  const perQ=g.personalaufwand&&g.umsatz?(g.personalaufwand/g.umsatz*100):null;
+  const fkVal=b.eigenkapital&&b.bilanzsumme?(b.bilanzsumme-b.eigenkapital):null;
+  const verschuld=fkVal&&b.eigenkapital?(fkVal/b.eigenkapital):null;
+  const current=b.umlaufvermoegen&&b.verbindlichkeiten?(b.umlaufvermoegen/b.verbindlichkeiten):null;
+  const cf=g.jahresueberschuss!==null&&g.abschreibungen?(g.jahresueberschuss+(g.abschreibungen||0)):g.jahresueberschuss;
+  const ebitda=(g.ebit!==null&&g.ebit!==undefined)&&(g.abschreibungen!==null&&g.abschreibungen!==undefined)?(g.ebit+g.abschreibungen):g.ebit;
+  const ebitdaMarge=ebitda&&g.umsatz?(ebitda/g.umsatz*100):null;
+  c.ebitda=ebitdaMarge!==null?fmtDE(ebitdaMarge,2)+'%':c.ebitda;
+  c.status=(g.jahresueberschuss||0)>=0?'g':'r';
+  c.statusLabel=(g.jahresueberschuss||0)>=0?'Aktiv':'Verlust';
+  c.kpi={
+    umsatzrendite:umsRend!==null?fmtDE(umsRend,2)+'%':c.kpi?.umsatzrendite||'\u2013',
+    ebitda:ebitdaMarge!==null?fmtDE(ebitdaMarge,2)+'%':c.kpi?.ebitda||'\u2013',
+    ek:ekQ!==null?fmtDE(ekQ,2)+'%':c.kpi?.ek||'\u2013',
+    verschuldung:verschuld!==null?fmtDE(verschuld,2)+'x':c.kpi?.verschuldung||'\u2013',
+    current:current!==null?fmtDE(current,2):c.kpi?.current||'\u2013',
+    personal:perQ!==null?fmtDE(perQ,2)+'%':c.kpi?.personal||'\u2013',
+    cashflow:cf!==null?fmtMio(cf):c.kpi?.cashflow||'\u2013',
+    debitoren:c.kpi?.debitoren||'\u2013',
+  };
+  function pct(a,vj){if(!a||!vj)return '\u2013';const dd=(a-vj)/Math.abs(vj)*100;return(dd>=0?'+':'')+fmtDE(dd,1)+'%';}
+  function diff(a,vj){if(a===null||vj===null||a===undefined||vj===undefined)return '\u2013';const dd=a-vj;return(dd>=0?'+':'')+fmtEURfull(dd);}
+  const vjU=g.vorjahr_umsatz;const fE=fmtEURfull;
+  c.charts=c.charts||{};
+  c.charts.guv={
+    pos:['Umsatzerlöse','Materialaufwand','Personalaufwand','Sonst. Aufwend.','Sonst. Erträge','EBIT','Finanzergebnis','EBT','Steuern','Jahresüberschuss'],
+    y23:[vjU?fE(vjU):'\u2013','\u2013','\u2013','\u2013','\u2013','\u2013','\u2013','\u2013','\u2013','\u2013'],
+    y24:[fE(g.umsatz),fE(g.materialaufwand),fE(g.personalaufwand),fE(g.sonstige_betr_aufwend),fE(g.sonstige_betr_ertraege),fE(g.ebit),fE(g.finanzergebnis),fE(g.ebt),fE(g.steuern),fE(g.jahresueberschuss)],
+    chg:[diff(g.umsatz,vjU),'\u2013','\u2013','\u2013','\u2013','\u2013','\u2013','\u2013','\u2013','\u2013'],
+    pct:[pct(g.umsatz,vjU),'\u2013','\u2013','\u2013','\u2013','\u2013','\u2013','\u2013','\u2013','\u2013'],
+    dir:[(g.umsatz||0)>=(vjU||0)?'g':'r','r','r','r','g','g','g','g','r',(g.jahresueberschuss||0)>=0?'g':'r'],
+  };
+  if(g.umsatz){
+    const mo=Math.round(g.umsatz/12/1000);
+    const vj=vjU?Math.round(vjU/12/1000):Math.round(mo*0.93);
+    const wave=[0.92,0.88,1.05,0.97,1.10,1.15,1.04,0.98,1.06,1.12,1.09,1.04];
+    c.charts.monat=wave.map(f=>Math.round(mo*f));
+    c.charts.monatVj=wave.map(f=>Math.round(vj*f));
+    c.charts.ebitda=wave.map(f=>Math.round(mo*f*(ebitdaMarge||7)/100));
+  }
+  // Store as named Abschluss entry
+  if(!c.abschluesse) c.abschluesse=[];
+  const existingIdx = c.abschluesse.findIndex(a=>a.jahr===d.geschaeftsjahr);
+  const eintrag = {
+    jahr: d.geschaeftsjahr||'unbekannt',
+    dateiname: window._lastUploadFilename||'Jahresabschluss',
+    geladen: new Date().toLocaleDateString('de-AT'),
+    kpi: c.kpi,
+    charts: c.charts,
+    raw: d
+  };
+  if(existingIdx>=0){ c.abschluesse[existingIdx]=eintrag; c.activeAbschlussIdx=existingIdx; }
+  else { c.abschluesse.push(eintrag); c.activeAbschlussIdx=c.abschluesse.length-1; }
+  renderGrids();
+}
+
+function renderAbschlusseListe(c){
+  const box=document.getElementById('abschluesse-liste');
+  if(!box) return;
+  if(!c.abschluesse||c.abschluesse.length===0){
+    box.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px 0">Noch kein Abschluss hochgeladen. Klicke oben auf "Datei hochladen".</div>';
+    return;
+  }
+  box.innerHTML=c.abschluesse.map((a,i)=>{
+    const active=i===c.activeAbschlussIdx;
+    return `<div onclick="setActiveAbschluss('${c.id}',${i})" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:7px;cursor:pointer;border:1px solid ${active?'var(--y)':'var(--border)'};background:${active?'var(--yl)':'#fff'};margin-bottom:6px;transition:all 0.12s">
+      <span style="font-size:16px">📄</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12.5px;font-weight:${active?700:500};color:${active?'var(--amber)':'var(--text)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.dateiname}</div>
+        <div style="font-size:11px;color:var(--muted)">GJ ${a.jahr} &middot; Geladen ${a.geladen}</div>
+      </div>
+      ${active?'<span style="font-size:10px;font-weight:700;color:var(--amber);background:var(--yl);padding:2px 8px;border-radius:20px">AKTIV</span>':''}
+    </div>`;
+  }).join('');
+}
+function setActiveAbschluss(compId,idx){
+  const c=companies.find(x=>x.id===compId);
+  if(!c) return;
+  c.activeAbschlussIdx=idx;
+  const a=c.abschluesse[idx];
+  if(a){c.kpi=a.kpi;c.charts=a.charts;}
+  renderAbschlusseListe(c);
+  Object.keys(ci).forEach(k=>{ci[k]=false;});
+  openCompany(compId);
+}
+
+const Y="#FBBA00",Yl="rgba(251,186,0,0.12)",G="#2e7d52",Gl="rgba(46,125,82,0.1)",R="#c0392b",Rl="rgba(192,57,43,0.1)",B="#1a4e8a",Bl="rgba(26,78,138,0.1)",A="#a06800";
+const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:11},boxWidth:10,padding:12}}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:"#bbb"}},y:{grid:{color:"#f2f2f0"},ticks:{font:{size:11},color:"#bbb"}}}};
+
+function destroyChart(id){const el=document.getElementById(id);if(el&&el._ch){el._ch.destroy();el._ch=null;}}
+function mkChart(id,type,data,opts){const el=document.getElementById(id);if(!el)return;destroyChart(id);el._ch=new Chart(el,{type,data,options:opts||base});}
+
+function renderRohdatenTab(){
+  const c=companies.find(x=>x.id===currentDetailId);
+  if(!c){return;}
+  // Empty state if no data
+  const hasData=c.abschluesse&&c.abschluesse.length>0&&c.activeAbschlussIdx!=null;
+  document.getElementById('rd-empty').style.display=hasData?'none':'block';
+  document.getElementById('rd-content').style.display=hasData?'block':'none';
+  if(!hasData) return;
+  const a=c.abschluesse[c.activeAbschlussIdx];
+  const d=a.raw||{};const g=d.guv||{};const b=d.bilanz||{};
+  const fE=fmtEURfull;
+  // Header
+  document.getElementById('rd-name').textContent=d.unternehmen||c.name;
+  document.getElementById('rd-meta').textContent=[d.rechtsform,d.sitz].filter(Boolean).join(' · ')||c.fn+' · '+c.ort;
+  document.getElementById('rd-badge').textContent='GJ '+(d.geschaeftsjahr||c.abschluss);
+  document.getElementById('rd-pruefer-badge').textContent='Prüfer: '+c.pruefer;
+  // KPI grid
+  const ekQ=b.eigenkapital&&b.bilanzsumme?(b.eigenkapital/b.bilanzsumme*100):null;
+  const umsR=g.jahresueberschuss&&g.umsatz?(g.jahresueberschuss/g.umsatz*100):null;
+  const ebitda=(g.ebit!=null&&g.abschreibungen!=null)?(g.ebit+g.abschreibungen):g.ebit;
+  const ebitdaM=ebitda&&g.umsatz?(ebitda/g.umsatz*100):null;
+  const perQ=g.personalaufwand&&g.umsatz?(g.personalaufwand/g.umsatz*100):null;
+  const matQ=g.materialaufwand&&g.umsatz?(g.materialaufwand/g.umsatz*100):null;
+  const fkVal=b.bilanzsumme&&b.eigenkapital?(b.bilanzsumme-b.eigenkapital):null;
+  const verschuld=fkVal&&b.eigenkapital?(fkVal/b.eigenkapital):null;
+  function kpiColor(val,green,amber){if(val===null)return '#6b7280';return val>=green?'var(--green)':val>=amber?'var(--amber)':'var(--red)';}
+  const kpis=[
+    {l:'Bilanzsumme',v:fE(b.bilanzsumme),c:'var(--blue,#1a4e8a)',big:true},
+    {l:'Umsatzerlöse',v:fE(g.umsatz),c:'var(--text)',big:true},
+    {l:'Jahresüberschuss',v:fE(g.jahresueberschuss),c:(g.jahresueberschuss||0)>=0?'var(--green)':'var(--red)',big:true},
+    {l:'EBIT',v:fE(g.ebit),c:(g.ebit||0)>=0?'var(--green)':'var(--red)',big:true},
+    {l:'Eigenkapital',v:fE(b.eigenkapital),c:'#1a4e8a'},
+    {l:'EK-Quote',v:ekQ!=null?fmtDE(ekQ,2)+'%':'–',c:kpiColor(ekQ,30,20),sub:'Benchmark > 30%'},
+    {l:'Umsatzrendite',v:umsR!=null?fmtDE(umsR,2)+'%':'–',c:kpiColor(umsR,5,3),sub:'Benchmark > 5%'},
+    {l:'EBITDA-Marge',v:ebitdaM!=null?fmtDE(ebitdaM,2)+'%':'–',c:kpiColor(ebitdaM,7,4),sub:'Benchmark > 7%'},
+    {l:'Personalquote',v:perQ!=null?fmtDE(perQ,2)+'%':'–',c:perQ<=32?'var(--green)':perQ<=38?'var(--amber)':'var(--red)',sub:'Benchmark < 32%'},
+    {l:'Materialquote',v:matQ!=null?fmtDE(matQ,2)+'%':'–',c:'var(--text)',sub:'Anteil am Umsatz'},
+    {l:'Verschuldungsgrad',v:verschuld!=null?fmtDE(verschuld,2)+'x':'–',c:kpiColor(verschuld?-verschuld:null,-2.5,-3.5),sub:'Benchmark < 2,5x'},
+    {l:'Mitarbeiter (Ø)',v:d.mitarbeiter!=null?fmtDE(d.mitarbeiter,0)+' MA':'–',c:'var(--text)'},
+  ];
+  document.getElementById('rd-kpi-grid').innerHTML=kpis.map(k=>`
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+      <div style="font-size:10.5px;color:var(--muted);font-weight:500;margin-bottom:5px">${k.l}</div>
+      <div style="font-size:${k.big?'16px':'14px'};font-weight:700;color:${k.c};font-variant-numeric:tabular-nums;line-height:1.2">${k.v}</div>
+      ${k.sub?`<div style="font-size:10px;color:var(--muted);margin-top:3px">${k.sub}</div>`:''}
+    </div>`).join('');
+  // GuV table
+  const gjahr=d.geschaeftsjahr||'2024';const vjahr=String(parseInt(gjahr)-1);
+  document.getElementById('rd-tbl-guv').innerHTML=`<thead><tr><th>Position</th><th style="text-align:right">${vjahr}</th><th style="text-align:right">${gjahr}</th></tr></thead><tbody>`+[
+    ['Umsatzerlöse',fE(g.vorjahr_umsatz),fE(g.umsatz),false,false],
+    ['+ Sonst. Erträge','–',fE(g.sonstige_betr_ertraege),false,false],
+    ['− Materialaufwand','–',fE(g.materialaufwand),false,true],
+    ['− Personalaufwand','–',fE(g.personalaufwand),false,true],
+    ['− Abschreibungen','–',fE(g.abschreibungen),false,true],
+    ['− Sonst. Aufwend.','–',fE(g.sonstige_betr_aufwend),false,true],
+    ['= EBIT','–',fE(g.ebit),true,false],
+    ['± Finanzergebnis','–',fE(g.finanzergebnis),false,false],
+    ['= EBT','–',fE(g.ebt),true,false],
+    ['− Steuern','–',fE(g.steuern),false,true],
+    ['= Jahresüberschuss','–',fE(g.jahresueberschuss),true,false],
+  ].map(([l,vj,cj,bold,cost])=>{
+    const numColor=bold?(parseFloat(String(cj).replace(/[^0-9,.-]/g,'').replace(',','.'))<0?'var(--red)':'var(--green)'):(cost?'var(--red)':'var(--text)');
+    return `<tr style="${bold?'border-top:2px solid var(--border)':''}"><td style="${bold?'font-weight:700':'font-size:12px'}">${l}</td><td style="text-align:right;color:var(--muted);font-size:12px">${vj}</td><td style="text-align:right;font-variant-numeric:tabular-nums;color:${numColor};${bold?'font-weight:700':''}">${cj}</td></tr>`;
+  }).join('')+'</tbody>';
+  // Bilanz Aktiva
+  document.getElementById('rd-tbl-aktiva').innerHTML='<tbody>'+[
+    ['Anlagevermögen',fE(b.anlagevermoegen),false],
+    ['Umlaufvermögen',fE(b.umlaufvermoegen),false],
+    ['  Vorräte',fE(b.vorraeate),false],
+    ['  Forderungen',fE(b.forderungen),false],
+    ['  Kasse',fE(b.kassenbestand),false],
+    ['Bilanzsumme',fE(b.bilanzsumme),true],
+  ].map(([l,v,bold])=>`<tr style="${bold?'border-top:2px solid var(--border)':''}"><td style="${bold?'font-weight:700':'font-size:12px'}">${l}</td><td style="text-align:right;font-variant-numeric:tabular-nums;${bold?'font-weight:700':''}">${v}</td></tr>`).join('')+'</tbody>';
+  // Bilanz Passiva
+  document.getElementById('rd-tbl-passiva').innerHTML='<tbody>'+[
+    ['Eigenkapital',fE(b.eigenkapital),false],
+    ['Rückstellungen',fE(b.rueckstellungen),false],
+    ['Verbindlichkeiten',fE(b.verbindlichkeiten),false],
+    ['Bilanzsumme',fE(b.bilanzsumme),true],
+  ].map(([l,v,bold])=>`<tr style="${bold?'border-top:2px solid var(--border)':''}"><td style="${bold?'font-weight:700':'font-size:12px'}">${l}</td><td style="text-align:right;font-variant-numeric:tabular-nums;${bold?'font-weight:700':''}">${v}</td></tr>`).join('')+'</tbody>';
+  // Sparten
+  const sparten=d.umsatz_sparten||[];
+  const spartCard=document.getElementById('rd-sparten-card');
+  if(sparten.length>0){
+    spartCard.style.display='block';
+    document.getElementById('rd-tbl-sparten').innerHTML='<thead><tr><th>Sparte</th><th style="text-align:right">Vorjahr</th><th style="text-align:right">'+gjahr+'</th><th style="text-align:right">Δ</th></tr></thead><tbody>'+
+      sparten.map(s=>{
+        const diff=s.betrag_eur&&s.vorjahr_eur?s.betrag_eur-s.vorjahr_eur:null;
+        const diffStr=diff!=null?((diff>=0?'+':'')+fE(diff)):'–';
+        const diffColor=diff===null?'':diff>=0?'color:var(--green)':'color:var(--red)';
+        return `<tr><td>${s.name}</td><td style="text-align:right;color:var(--muted)">${s.vorjahr_eur?fE(s.vorjahr_eur):'–'}</td><td style="text-align:right;font-variant-numeric:tabular-nums">${s.betrag_eur?fE(s.betrag_eur):'–'}</td><td style="text-align:right;${diffColor}">${diffStr}</td></tr>`;
+      }).join('')+'</tbody>';
+  } else { spartCard.style.display='none'; }
+}
+
+function showMultiYearHint(report,needed){
+  // Find all canvases in the current report panel and replace with hint
+  const panel=document.getElementById('report-'+report);
+  if(!panel) return;
+  // remove old hints
+  panel.querySelectorAll('.multi-year-hint').forEach(e=>e.remove());
+  // hide all canvases in this panel
+  panel.querySelectorAll('canvas').forEach(el=>el.style.display='none');
+  // hide metrics-grid cards that show fake data
+  panel.querySelectorAll('.metric-card').forEach(el=>el.style.display='none');
+  // insert hint
+  const hint=document.createElement('div');
+  hint.className='multi-year-hint';
+  hint.style.cssText='text-align:center;padding:64px 24px;color:var(--muted)';
+  hint.innerHTML=
+    '<div style="font-size:36px;margin-bottom:14px">📅</div>'+
+    '<div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px">Mehrere Jahresabschlüsse erforderlich</div>'+
+    '<div style="font-size:12.5px;margin-bottom:20px">Für '+(report==='trend'?'die Trendanalyse werden mindestens 3 Jahresabschlüsse':report==='jahresvergleich'?'den Jahresvergleich werden mindestens 2 Jahresabschlüsse':'weitere Auswertungen werden mehr Daten')+' benötigt.</div>'+
+    '<div style="font-size:12px;color:var(--muted)">Aktuell hochgeladen: <strong style="color:var(--text)">'+(document.querySelectorAll && (companies.find(x=>x.id===currentDetailId)||{abschluesse:[]}).abschluesse.length || 0)+' Abschluss / Abschlüsse</strong></div>'+
+    '<div style="margin-top:20px"><button class="btn btn-primary" style="font-size:12.5px" onclick="fakeUpload()">+ Weiteren Jahresabschluss hochladen</button></div>';
+  // insert at top of panel content area (after any card headers)
+  const firstCard=panel.querySelector('.card,.metrics-grid,.cg2,.cg3');
+  if(firstCard) firstCard.before(hint);
+  else panel.prepend(hint);
+}
+
+function showEmptyState(containerId,msg){
+  const el=document.getElementById(containerId);
+  if(!el) return;
+  // clear canvas children and show message
+  const parent=el.parentElement;
+  let emp=parent.querySelector('.empty-state-msg');
+  if(!emp){emp=document.createElement('div');emp.className='empty-state-msg';emp.style.cssText='text-align:center;padding:48px 24px;color:var(--muted);font-size:13px';parent.insertBefore(emp,el);}
+  emp.innerHTML='<div style="font-size:28px;margin-bottom:12px">📂</div><div style="font-weight:600;margin-bottom:6px">Noch kein Jahresabschluss hochgeladen</div><div style="font-size:12px">'+msg+'</div>';
+  el.style.display='none';
+}
+function clearEmptyStates(){
+  document.querySelectorAll('.empty-state-msg').forEach(e=>e.remove());
+  document.querySelectorAll('.multi-year-hint').forEach(e=>e.remove());
+  document.querySelectorAll('canvas').forEach(e=>e.style.display='');
+  document.querySelectorAll('.metric-card').forEach(e=>e.style.display='');
+}
+
+function initCharts(r){
+  const c=companies.find(x=>x.id===currentDetailId)||companies[0];
+  // If no data uploaded yet: show empty state
+  if(!c.charts||!c.kpi){
+    clearEmptyStates();
+    ['c-kpi-main','c-kpi-cost','c-guv-monthly','c-guv-db','c-trend-revenue','c-trend-ebitda','c-trend-personal','c-trend-ek','c-jv-quarterly','c-liq-cashflow','c-bilanz-aktiv','c-bilanz-passiv','c-bilanz-compare'].forEach(id=>showEmptyState(id,'PDF hochladen um Daten zu laden'));
+    // also reset rohdaten tab
+    document.getElementById('rd-empty').style.display='block';
+    document.getElementById('rd-content').style.display='none';
+    return;
+  }
+  clearEmptyStates();
+  const ch=c.charts||{};
+  const monat=ch.monat||[];
+  const monatVj=ch.monatVj||[];
+  const ebitdaVals=ch.ebitda||[];
+  if(!monat.length) return;
+  const anzahlAbschluesse=(c.abschluesse||[]).length;
+
+  // Tabs that need 2+ Abschlüsse
+  if(r==='jahresvergleich'&&anzahlAbschluesse<2){showMultiYearHint(r,2);return;}
+  if(r==='trend'&&anzahlAbschluesse<3){showMultiYearHint(r,3);return;}
+
+  if(r==="rohdaten"){
+    renderRohdatenTab();
+  }
+  if(r==="kpi"){
+    destroyChart("c-kpi-main");destroyChart("c-kpi-cost");
+    const baseKpi={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:12},boxWidth:12,padding:14}}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:"#999"}},y:{grid:{color:"#f2f2f0"},ticks:{font:{size:11},color:"#999",callback:v=>'€ '+v+'k'}}}};
+    mkChart("c-kpi-main","bar",{labels:["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"],datasets:[{label:"Umsatz in k€",data:monat,backgroundColor:Yl,borderColor:Y,borderWidth:2,borderRadius:4},{label:"EBITDA in k€",data:ebitdaVals,backgroundColor:Gl,borderColor:G,borderWidth:2,borderRadius:4}]},baseKpi);
+    const rawKpi=c.abschluesse&&c.abschluesse[c.activeAbschlussIdx]?c.abschluesse[c.activeAbschlussIdx].raw:{};
+    const gKpi=rawKpi.guv||{};const uKpi=gKpi.umsatz||1;
+    const matP=gKpi.materialaufwand?Math.round(gKpi.materialaufwand/uKpi*100):50;
+    const perP=gKpi.personalaufwand?Math.round(gKpi.personalaufwand/uKpi*100):32;
+    const sonP=gKpi.sonstige_betr_aufwend?Math.round(gKpi.sonstige_betr_aufwend/uKpi*100):10;
+    const ebitP=Math.max(0,100-matP-perP-sonP);
+    mkChart("c-kpi-cost","doughnut",{labels:["Material ("+matP+"%)","Personal ("+perP+"%)","Sonstiges ("+sonP+"%)","EBITDA ("+ebitP+"%)"],datasets:[{data:[matP,perP,sonP,ebitP],backgroundColor:["#1a4e8a","#c0392b","#a06800","#2e7d52"],borderWidth:2,borderColor:"#fff",hoverOffset:6}]},{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"right",labels:{font:{size:12},boxWidth:12,padding:10}}}});
+  }
+  if(r==="guv"){
+    destroyChart("c-guv-monthly");destroyChart("c-guv-db");
+    const guvOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:12},boxWidth:12,padding:14}}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:"#999"}},y:{grid:{color:"#f2f2f0"},ticks:{font:{size:11},color:"#999",callback:v=>'€ '+v+'k'}}}};
+    mkChart("c-guv-monthly","bar",{labels:["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"],datasets:[{label:"Umsatz "+c.abschluss+" (k€)",data:monat,backgroundColor:Y,borderRadius:4,borderSkipped:false},{label:"Umsatz Vorjahr (k€)",data:monatVj,backgroundColor:Yl,borderRadius:4,borderColor:Y,borderWidth:1.5}]},guvOpts);
+    const rawGuv=c.abschluesse&&c.abschluesse[c.activeAbschlussIdx]?c.abschluesse[c.activeAbschlussIdx].raw:{};
+    const gd=rawGuv.guv||{};const us=gd.umsatz||1;
+    const aufwLabels=["Materialaufwand","Personalaufwand","Sonst. Aufwend.","EBIT"];
+    const aufwVals=[gd.materialaufwand,gd.personalaufwand,gd.sonstige_betr_aufwend,gd.ebit].map(v=>v?Math.round(v/us*1000)/10:0);
+    const aufwColors=["#1a4e8a","#c0392b","#a06800",(gd.ebit||0)>=0?"#2e7d52":"#c0392b"];
+    mkChart("c-guv-db","bar",{labels:aufwLabels,datasets:[{label:"Anteil am Umsatz",data:aufwVals,backgroundColor:aufwColors,borderRadius:4}]},{responsive:true,maintainAspectRatio:false,indexAxis:"y",plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.x.toFixed(1)+'% des Umsatzes'}}},scales:{x:{grid:{color:"#f2f2f0"},ticks:{font:{size:11},color:"#999",callback:v=>v+'%'},max:Math.min(100,Math.max(...aufwVals)+10)},y:{grid:{display:false},ticks:{font:{size:12},color:"#444"}}}});
+  }
+  if(r==="trend"){
+    ["c-trend-revenue","c-trend-ebitda","c-trend-personal","c-trend-ek"].forEach(destroyChart);
+    const tSorted=[...c.abschluesse].sort((a,b)=>parseInt(a.jahr)-parseInt(b.jahr));
+    const tLabels=tSorted.map(a=>a.jahr);
+    const tUmsatz=tSorted.map(a=>{const g=a.raw&&a.raw.guv?a.raw.guv:{};return g.umsatz?Math.round(g.umsatz/1e4)/100:null;});
+    const tEbitda=tSorted.map(a=>parseFloat((a.kpi||{}).ebitda)||null);
+    const tPersonal=tSorted.map(a=>parseFloat((a.kpi||{}).personal)||null);
+    const tEk=tSorted.map(a=>parseFloat((a.kpi||{}).ek)||null);
+    const tBase={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:12},boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{size:12},color:"#999"}},y:{grid:{color:"#f2f2f0"},ticks:{font:{size:11},color:"#999",callback:v=>"€ "+v+" Mio"}}}};
+    const sm={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:12},boxWidth:12}}},scales:{x:{grid:{display:false},ticks:{font:{size:12},color:"#999"}},y:{grid:{color:"#f2f2f0"},ticks:{font:{size:11},color:"#999",callback:v=>v+"%"}}}};
+    mkChart("c-trend-revenue","line",{labels:tLabels,datasets:[{label:"Umsatz in Mio €",data:tUmsatz,borderColor:Y,backgroundColor:Yl,fill:true,tension:0.3,pointRadius:6,pointBackgroundColor:Y,borderWidth:2.5}]},tBase);
+    mkChart("c-trend-ebitda","line",{labels:tLabels,datasets:[{label:"EBITDA-Marge %",data:tEbitda,borderColor:G,backgroundColor:Gl,fill:true,tension:0.3,pointRadius:5,pointBackgroundColor:G,borderWidth:2}]},sm);
+    mkChart("c-trend-personal","line",{labels:tLabels,datasets:[{label:"Personalkosten-Quote %",data:tPersonal,borderColor:A,backgroundColor:"rgba(160,104,0,0.08)",fill:true,tension:0.3,pointRadius:5,pointBackgroundColor:A,borderWidth:2}]},sm);
+    mkChart("c-trend-ek","line",{labels:tLabels,datasets:[{label:"Eigenkapitalquote %",data:tEk,borderColor:R,backgroundColor:Rl,fill:true,tension:0.3,pointRadius:5,pointBackgroundColor:R,borderWidth:2}]},sm);
+  }
+  if(r==="jahresvergleich"){
+    destroyChart("c-jv-quarterly");
+    const jvSorted=[...c.abschluesse].sort((a,b)=>parseInt(a.jahr)-parseInt(b.jahr));
+    const jvA=jvSorted[jvSorted.length-2];const jvB=jvSorted[jvSorted.length-1];
+    const gA=jvA.raw&&jvA.raw.guv?jvA.raw.guv:{};const gB=jvB.raw&&jvB.raw.guv?jvB.raw.guv:{};
+    const kA=jvA.kpi||{};const kB=jvB.kpi||{};
+    function pctD(b,a){if(!b||!a)return null;return Math.round((b-a)/Math.abs(a)*1000)/10;}
+    function fD(d,inv){if(d===null)return "–";const ok=inv?d<=0:d>=0;return(d>=0?"+":"")+d+"%";}
+    const mcards=document.querySelectorAll(".metric-card");
+    const metrics=[
+      {l:"Umsatz",d:pctD(gB.umsatz,gA.umsatz),from:fmtEURfull(gA.umsatz),to:fmtEURfull(gB.umsatz)},
+      {l:"EBITDA-Marge",d:pctD(parseFloat(kB.ebitda),parseFloat(kA.ebitda)),from:kA.ebitda||"–",to:kB.ebitda||"–"},
+      {l:"Personalaufwand",d:pctD(gB.personalaufwand,gA.personalaufwand),from:fmtEURfull(gA.personalaufwand),to:fmtEURfull(gB.personalaufwand),inv:true},
+      {l:"EK-Quote",d:pctD(parseFloat(kB.ek),parseFloat(kA.ek)),from:kA.ek||"–",to:kB.ek||"–"},
+    ];
+    mcards.forEach((el,i)=>{
+      if(!metrics[i])return;const m=metrics[i];
+      const isGood=m.inv?(m.d<=0):(m.d>=0);
+      el.style.display="";
+      el.innerHTML='<div class="metric-label">'+m.l+'</div><div class="metric-value" style="color:'+(m.d===null?"var(--text)":isGood?"var(--green)":"var(--red)")+'">'+fD(m.d)+'</div><div class="metric-delta">'+(m.from||"–")+" → "+(m.to||"–")+'</div>';
+    });
+    const jvLabels=["Umsatz","Materialaufw.","Personalaufw.","EBIT","Jahresüberschuss"];
+    const jvDA=[gA.umsatz,gA.materialaufwand,gA.personalaufwand,gA.ebit,gA.jahresueberschuss].map(v=>v?Math.round(v/1000):null);
+    const jvDB=[gB.umsatz,gB.materialaufwand,gB.personalaufwand,gB.ebit,gB.jahresueberschuss].map(v=>v?Math.round(v/1000):null);
+    mkChart("c-jv-quarterly","bar",{labels:jvLabels,datasets:[
+      {label:jvA.jahr+" (k€)",data:jvDA,backgroundColor:Yl,borderColor:Y,borderWidth:1.5,borderRadius:4},
+      {label:jvB.jahr+" (k€)",data:jvDB,backgroundColor:Y,borderRadius:4}
+    ]},{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:12},boxWidth:12,padding:14}}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:"#999"}},y:{grid:{color:"#f2f2f0"},ticks:{font:{size:11},color:"#999",callback:v=>"€ "+v+"k"}}}}); 
+  }
+  if(r==="liquiditaet"){
+    destroyChart("c-liq-cashflow");
+    const opCF=monat.map(v=>Math.round(v*Math.max(0.01,parseFloat(c.kpi.ebitda)/100||0.07)));
+    const invCF=monat.map((v,i)=>i===2?-Math.round(v*0.4):-Math.round(v*0.015));
+    mkChart("c-liq-cashflow","bar",{labels:["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"],datasets:[{label:"Operativer Cashflow (k€)",data:opCF,backgroundColor:G,borderRadius:3},{label:"Investitions-CF (k€)",data:invCF,backgroundColor:R,borderRadius:3},{label:"Finanzierungs-CF (k€)",data:monat.map(()=>0),backgroundColor:B,borderRadius:3}]},{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:12},boxWidth:12,padding:14}}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:"#999"},stacked:true},y:{grid:{color:"#f2f2f0"},ticks:{font:{size:11},color:"#999",callback:v=>'€ '+v+'k'},stacked:true}}});
+  }
+  if(r==="bilanz"){
+    ["c-bilanz-aktiv","c-bilanz-passiv","c-bilanz-compare"].forEach(destroyChart);
+    const rawBil=c.abschluesse&&c.abschluesse[c.activeAbschlussIdx]?c.abschluesse[c.activeAbschlussIdx].raw:{};
+    const bb=rawBil.bilanz||{};const bs=bb.bilanzsumme||1;
+    const anlP=bb.anlagevermoegen?Math.round(bb.anlagevermoegen/bs*100):40;
+    const vorrP=bb.vorraeate?Math.round(bb.vorraeate/bs*100):10;
+    const fordP=bb.forderungen?Math.round(bb.forderungen/bs*100):18;
+    const kassP=bb.kassenbestand?Math.round(bb.kassenbestand/bs*100):8;
+    const dnutOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{font:{size:12},boxWidth:12,padding:10}}}};
+    mkChart("c-bilanz-aktiv","doughnut",{labels:["Anlageverm. ("+anlP+"%)","Vorräte ("+vorrP+"%)","Forderungen ("+fordP+"%)","Kasse ("+kassP+"%)"],datasets:[{data:[anlP,vorrP,fordP,kassP],backgroundColor:["#1a4e8a","#a06800","#FBBA00","#2e7d52"],borderWidth:2,borderColor:"#fff",hoverOffset:6}]},dnutOpts);
+    const ekV=parseFloat(c.kpi.ek)||30;
+    const rueckP=bb.rueckstellungen?Math.round(bb.rueckstellungen/bs*100):5;
+    const verbP=bb.verbindlichkeiten?Math.round(bb.verbindlichkeiten/bs*100):8;
+    const fkP=Math.max(0,100-Math.round(ekV)-rueckP-verbP);
+    mkChart("c-bilanz-passiv","doughnut",{labels:["Eigenkapital ("+Math.round(ekV)+"%)","Rückstellungen ("+rueckP+"%)","Verbindlichkeiten ("+verbP+"%)","Sonst. FK ("+fkP+"%)"],datasets:[{data:[Math.round(ekV),rueckP,verbP,fkP],backgroundColor:["#2e7d52","#a06800","#c0392b","#1a4e8a"],borderWidth:2,borderColor:"#fff",hoverOffset:6}]},dnutOpts);
+    mkChart("c-bilanz-compare","bar",{labels:["Anlageverm.","Umlaufverm.","Eigenkapital","Fremdkapital"],datasets:[{label:"Anteil an Bilanzsumme in %",data:[anlP,100-anlP,Math.round(ekV),100-Math.round(ekV)],backgroundColor:["#1a4e8a","#2e7d52","#2e7d52","#c0392b"],borderRadius:4}]},{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:12},boxWidth:12,padding:14}}},scales:{x:{grid:{display:false},ticks:{font:{size:11},color:"#999"}},y:{grid:{color:"#f2f2f0"},ticks:{font:{size:11},color:"#999",callback:v=>v+'%'},max:100}}});
+  }
+}
+// ── NOTIZEN ──
+const notesStore = {};
+function loadNote(id) {
+  const n = notesStore[id] || {text:'', entries:[]};
+  document.getElementById('note-textarea').value = n.text;
+  const meta = document.getElementById('note-meta');
+  if (n.entries.length > 0) {
+    const last = n.entries[n.entries.length-1];
+    meta.textContent = 'Zuletzt gespeichert: ' + last.date + ' von ' + last.author;
+  } else { meta.textContent = ''; }
+  renderNoteHistory(id);
+}
+function saveNote() {
+  const id = currentDetailId; if(!id) return;
+  const text = document.getElementById('note-textarea').value;
+  const now = new Date().toLocaleDateString('de-AT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  if (!notesStore[id]) notesStore[id] = {text:'', entries:[]};
+  notesStore[id].text = text;
+  notesStore[id].entries.push({date: now, author:'Manuel', text});
+  document.getElementById('note-meta').textContent = 'Gespeichert: ' + now + ' von Manuel';
+  const btn = document.getElementById('note-save-btn');
+  btn.textContent = 'Gespeichert'; btn.style.background='var(--green)'; btn.style.color='#fff';
+  setTimeout(()=>{ btn.textContent='Speichern'; btn.style.background=''; btn.style.color=''; }, 1800);
+  renderNoteHistory(id);
+}
+function renderNoteHistory(id) {
+  const n = notesStore[id] || {entries:[]};
+  const card = document.getElementById('note-history-card');
+  const hist = document.getElementById('note-history');
+  if (n.entries.length <= 1) { card.style.display='none'; return; }
+  card.style.display='block';
+  hist.innerHTML = [...n.entries].reverse().slice(1).map(e =>
+    '<div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">'+e.date+' · '+e.author+'</div><div style="font-size:13px;color:var(--text);white-space:pre-wrap">'+(e.text||'(leer)')+'</div></div>').join('');
+}
+
+// ── PRÜFUNGSBERICHT ──
+function selectBewertung(el) {
+  document.querySelectorAll('.bew-option').forEach(o=>{ o.style.border='2px solid var(--border)'; o.style.background='#fff'; });
+  const c={gut:'var(--green)',mittel:'var(--amber)',kritisch:'var(--red)'};
+  const b={gut:'var(--greenl)',mittel:'var(--amberl)',kritisch:'var(--redl)'};
+  const v=el.dataset.val;
+  el.style.border='2px solid '+c[v]; el.style.background=b[v];
+}
+function addMangelRow() {
+  const list=document.getElementById('maengel-list');
+  const row=document.createElement('div');
+  row.className='mangel-row';
+  row.style.cssText='display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)';
+  row.innerHTML='<select style="border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;color:var(--text);background:#fff;flex-shrink:0"><option>Wesentlich</option><option>Hinweis</option><option>Empfehlung</option></select><input style="flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);outline:none" placeholder="Mangel beschreiben ..."><button onclick="this.parentElement.remove()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0">&#10005;</button>';
+  list.appendChild(row); row.querySelector('input').focus();
+}
+function addEmpfehlungRow() {
+  const list=document.getElementById('empfehlungen-list');
+  const num=list.querySelectorAll('.empf-row').length+1;
+  const row=document.createElement('div');
+  row.className='empf-row';
+  row.style.cssText='display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)';
+  row.innerHTML='<div style="width:20px;height:20px;border-radius:50%;background:var(--yl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--amber);flex-shrink:0;margin-top:4px">'+num+'</div><input style="flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);outline:none" placeholder="Empfehlung ..."><button onclick="this.parentElement.remove();renumberEmpf()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;flex-shrink:0">&#10005;</button>';
+  list.appendChild(row); row.querySelector('input').focus();
+}
+function renumberEmpf() {
+  document.querySelectorAll('.empf-row').forEach((r,i)=>{ const d=r.querySelector('div'); if(d) d.textContent=i+1; });
+}
+
+renderGrids();
+renderUsers();
+// open first company so charts have data context on first click
+setTimeout(()=>{ currentDetailId="1"; },50);
+
+// ── PDF EXPORT ──────────────────────────────────────────────────────────────
+const LOGO_B64 = document.querySelector('.logo-img')?.src || '';
+
+function fmtEURpdf(n){if(n==null||n===undefined)return'–';return'€ '+new Intl.NumberFormat('de-AT',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);}
+function fmtDEpdf(n,d=2){if(n==null)return'–';return new Intl.NumberFormat('de-AT',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n);}
+function clrPdf(v,gn,w,inv=false){if(v==null)return'#555';return(inv?v<=gn:v>=gn)?'#2e7d52':(inv?v<=w:v>=w)?'#a06800':'#c0392b';}
+
+function exportPDF(){
+  const c = companies.find(x=>x.id===currentDetailId);
+  if(!c){alert('Bitte zuerst ein Unternehmen öffnen.');return;}
+
+  // Build data context — prefer active Abschluss raw data, fall back to kpi
+  let rawG={}, rawB={}, rawD={};
+  if(c.abschluesse && c.abschluesse.length>0 && c.activeAbschlussIdx!=null){
+    const a=c.abschluesse[c.activeAbschlussIdx];
+    rawD=a.raw||{};
+    rawG=rawD.guv||{};
+    rawB=rawD.bilanz||{};
+  }
+
+  const kpi=c.kpi||{};
+  const gjahr = rawD.geschaeftsjahr || c.abschluss || '2024';
+  const vjahr = String(parseInt(gjahr)-1);
+
+  // Computed KPIs
+  const bs=rawB.bilanzsumme||kpi.bilanzsumme||0;
+  const ek=rawB.eigenkapital||kpi.eigenkapital||0;
+  const ums=rawG.umsatz||kpi.umsatz||0;
+  const ebit=rawG.ebit||0;
+  const abschr=rawG.abschreibungen||0;
+  const jahrUe=rawG.jahresueberschuss||0;
+  const perAuf=rawG.personalaufwand||0;
+  const matAuf=rawG.materialaufwand||0;
+  const sonAuf=rawG.sonstige_betr_aufwend||0;
+  const ebitda=ebit+abschr;
+  const ekQ=bs>0?(ek/bs*100):null;
+  const umsR=ums>0?(jahrUe/ums*100):null;
+  const ebitdaM=ums>0?(ebitda/ums*100):null;
+  const perQ=ums>0?(perAuf/ums*100):null;
+  const matQ=ums>0?(matAuf/ums*100):null;
+  const sonQ=ums>0?(sonAuf/ums*100):null;
+  const ebitdaQ=matQ!=null?Math.max(0,100-matQ-(perQ||0)-(sonQ||0)):null;
+  const rueckP=bs>0?((rawB.rueckstellungen||0)/bs*100):null;
+  const verbP=bs>0?((rawB.verbindlichkeiten||0)/bs*100):null;
+  const fkVal=bs&&ek?(bs-ek):null;
+  const verschuld=fkVal&&ek?(fkVal/ek):null;
+  const currentR=rawB.verbindlichkeiten&&rawB.umlaufvermoegen?(rawB.umlaufvermoegen/rawB.verbindlichkeiten):null;
+
+  // Prüfer-Kommentar aus Berichts-Textarea (wenn vorhanden)
+  const kommentarEl=document.getElementById('bericht-zusammenfassung');
+  const kommentar=kommentarEl?kommentarEl.value.trim():'';
+
+  // Empfehlungen
+  const empfRows=[...document.querySelectorAll('.empf-row input')].map(i=>i.value.trim()).filter(Boolean);
+
+  // Bar helper
+  function barRowHtml(label,pct,color){
+    const w=pct!=null?Math.max(4,Math.min(100,Math.round(pct))):0;
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+      <div style="width:120px;font-size:10.5px;color:#666;text-align:right;flex-shrink:0">${label}</div>
+      <div style="flex:1;background:#e5e7eb;border-radius:3px;height:15px">
+        <div style="width:${w}%;height:15px;border-radius:3px;background:${color};display:flex;align-items:center;justify-content:flex-end;padding-right:4px">
+          <span style="font-size:9.5px;font-weight:600;color:#fff">${pct!=null?Math.round(pct)+'%':''}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // GuV rows
+  const guvRows=[
+    ['Umsatzerlöse',fmtEURpdf(rawG.vorjahr_umsatz),fmtEURpdf(ums),false],
+    ['+ Sonstige betr. Erträge','–',fmtEURpdf(rawG.sonstige_betr_ertraege),false],
+    ['− Materialaufwand','–',fmtEURpdf(matAuf),false],
+    ['− Personalaufwand','–',fmtEURpdf(perAuf),false],
+    ['− Abschreibungen','–',fmtEURpdf(abschr),false],
+    ['− Sonstige betr. Aufwend.','–',fmtEURpdf(rawG.sonstige_betr_aufwend),false],
+    ['= EBIT','–',fmtEURpdf(ebit),true],
+    ['± Finanzergebnis','–',fmtEURpdf(rawG.finanzergebnis),false],
+    ['= Ergebnis vor Steuern','–',fmtEURpdf(rawG.ebt),true],
+    ['− Steuern','–',fmtEURpdf(rawG.steuern),false],
+    ['= Jahresüberschuss','–',fmtEURpdf(jahrUe),true],
+  ].map(([l,vj,cj,bold])=>`<tr class="${bold?'bold':''}"><td>${l}</td><td style="color:#aaa">${vj}</td><td>${cj}</td></tr>`).join('');
+
+  function bilanzRows(rows){return rows.map(([l,v,bold])=>`<tr class="${bold?'bold':''}"><td>${l}</td><td>${v}</td></tr>`).join('');}
+
+  const aktivaRows=bilanzRows([
+    ['Anlagevermögen',fmtEURpdf(rawB.anlagevermoegen),false],
+    ['Umlaufvermögen',fmtEURpdf(rawB.umlaufvermoegen),false],
+    ['  davon Vorräte',fmtEURpdf(rawB.vorraeate),false],
+    ['  davon Forderungen',fmtEURpdf(rawB.forderungen),false],
+    ['  davon Kassenbestand',fmtEURpdf(rawB.kassenbestand),false],
+    ['Bilanzsumme',fmtEURpdf(bs),true],
+  ]);
+  const passivaRows=bilanzRows([
+    ['Eigenkapital',fmtEURpdf(ek),false],
+    ['Rückstellungen',fmtEURpdf(rawB.rueckstellungen),false],
+    ['Verbindlichkeiten',fmtEURpdf(rawB.verbindlichkeiten),false],
+    ['Bilanzsumme',fmtEURpdf(bs),true],
+  ]);
+
+  // KPI boxes
+  const kpis=[
+    {l:'Umsatzerlöse',v:fmtEURpdf(ums),bench:'',fill:70,col:'#1a4e8a'},
+    {l:'Jahresüberschuss',v:fmtEURpdf(jahrUe),bench:umsR!=null?'Rendite: '+fmtDEpdf(umsR)+'%':'',fill:umsR!=null?Math.min(100,umsR/10*100):0,col:clrPdf(umsR,5,3)},
+    {l:'EBITDA-Marge',v:ebitdaM!=null?fmtDEpdf(ebitdaM)+'%':'–',bench:'Benchmark > 7%',fill:ebitdaM!=null?Math.min(100,ebitdaM/15*100):0,col:clrPdf(ebitdaM,7,4)},
+    {l:'Eigenkapitalquote',v:ekQ!=null?fmtDEpdf(ekQ,1)+'%':'–',bench:'Benchmark > 30%',fill:ekQ!=null?Math.min(100,ekQ/60*100):0,col:clrPdf(ekQ,30,20)},
+    {l:'Eigenkapital',v:fmtEURpdf(ek),bench:'',fill:65,col:'#1a4e8a'},
+    {l:'Bilanzsumme',v:fmtEURpdf(bs),bench:'',fill:70,col:'#555'},
+    {l:'Personalquote',v:perQ!=null?fmtDEpdf(perQ,1)+'%':'–',bench:'Benchmark < 32%',fill:perQ!=null?Math.min(100,perQ/50*100):0,col:clrPdf(perQ,32,38,true)},
+    {l:'Current Ratio',v:currentR!=null?fmtDEpdf(currentR):'–',bench:'Benchmark > 1,5',fill:currentR!=null?Math.min(100,currentR/4*100):0,col:clrPdf(currentR,1.5,1)},
+  ];
+  const kpiBoxesHtml=kpis.map(k=>`
+    <div style="border:1px solid #e5e7eb;border-radius:7px;padding:10px 12px;background:#f9fafb">
+      <div style="font-size:9.5px;color:#888;font-weight:500;margin-bottom:4px">${k.l}</div>
+      <div style="font-size:15px;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums;color:${k.col}">${k.v}</div>
+      ${k.bench?`<div style="font-size:9px;color:#aaa;margin-top:3px">${k.bench}</div>`:''}
+      <div style="height:3px;background:#e5e7eb;border-radius:2px;margin-top:6px">
+        <div style="height:3px;border-radius:2px;width:${Math.round(k.fill)}%;background:${k.col}"></div>
+      </div>
+    </div>`).join('');
+
+  // Empfehlungen section
+  const empfHtml = empfRows.length > 0
+    ? `<div style="margin-top:18px">
+        <div style="font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #FBBA00">Empfehlungen</div>
+        ${empfRows.map((e,i)=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid #f1f5f9">
+          <div style="width:20px;height:20px;border-radius:50%;background:#FFFBEC;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#a06800;flex-shrink:0">${i+1}</div>
+          <div style="font-size:12px;color:#444;padding-top:2px">${e}</div>
+        </div>`).join('')}
+      </div>` : '';
+
+  const mitarbeiter=rawD.mitarbeiter;
+  const rechtsform=rawD.rechtsform||'';
+  const sitz=rawD.sitz||c.ort||'';
+  const fn=c.fn||'';
+
+  const html=`<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Jahresbericht ${gjahr} — ${c.name}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a2e;background:#f0f2f5;padding:24px}
+.btn-print{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#1a2e5a;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:20px}
+.btn-print:hover{background:#2a4070}
+#preview{background:#fff;border-radius:12px;padding:28px;max-width:860px;margin:0 auto;box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+.cover{background:#1a2e5a;color:#fff;border-radius:10px;padding:28px 24px 22px;margin-bottom:20px;position:relative;overflow:hidden}
+.cover::after{content:'';position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:rgba(251,186,0,0.1)}
+.cover-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:relative;z-index:1}
+.cover-badge{font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#FBBA00;margin-bottom:10px}
+.cover-title{font-size:22px;font-weight:600;margin-bottom:4px}
+.cover-sub{font-size:12px;opacity:0.7;margin-bottom:20px}
+.cover-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;font-size:11px}
+.cover-meta-label{opacity:0.6;margin-bottom:3px}
+.cover-meta-val{font-weight:600}
+.logo-wrap{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:4px}
+.logo-wrap img{width:64px;height:64px;border-radius:8px;object-fit:contain;background:#fff;padding:4px}
+.logo-wrap span{font-size:9px;opacity:0.55;text-align:center;line-height:1.3}
+.section-title{font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #FBBA00}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.chart-box{border:1px solid #e5e7eb;border-radius:7px;padding:14px;background:#fafafa}
+.chart-title{font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{text-align:left;padding:5px 8px;background:#f3f4f6;font-size:9.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.04em;border-bottom:2px solid #e5e7eb}
+td{padding:5px 8px;border-bottom:0.5px solid #f1f5f9;color:#374151}
+td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+tr.bold td{font-weight:600;background:#f9fafb;border-top:1.5px solid #e5e7eb}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.col-title{font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+.kommentar{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 16px;font-size:12px;line-height:1.7;color:#444;margin-bottom:18px}
+.kommentar-label{font-size:10px;font-weight:700;color:#a06800;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px}
+.footer{margin-top:16px;padding-top:10px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:10px;color:#999}
+.alert-box{background:#fff8ec;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:11.5px;color:#7a4f00;margin-bottom:16px;display:flex;gap:8px;align-items:flex-start;line-height:1.55}
+@media print{
+  body{background:#fff;padding:0}
+  .btn-print{display:none}
+  #preview{box-shadow:none;border-radius:0;max-width:100%;padding:10mm 14mm}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div style="max-width:860px;margin:0 auto">
+  <button class="btn-print" onclick="window.print()">&#128196; PDF drucken / speichern</button>
+</div>
+<div id="preview">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-inner">
+      <div>
+        <div class="cover-badge">Jahresbericht ${gjahr}</div>
+        <div class="cover-title">${c.name}</div>
+        <div class="cover-sub">${[rechtsform,sitz,fn].filter(Boolean).join(' &middot; ')}</div>
+        <div class="cover-meta">
+          <div><div class="cover-meta-label">Prüfer</div><div class="cover-meta-val">${c.pruefer}</div></div>
+          <div><div class="cover-meta-label">Stichtag</div><div class="cover-meta-val">31.12.${gjahr}</div></div>
+          ${mitarbeiter!=null?`<div><div class="cover-meta-label">Mitarbeiter (Ø)</div><div class="cover-meta-val">${Math.round(mitarbeiter)}</div></div>`:''}
+          <div><div class="cover-meta-label">Bilanzsumme</div><div class="cover-meta-val">${fmtEURpdf(bs)}</div></div>
+        </div>
+      </div>
+      <div class="logo-wrap">
+        <img src="${LOGO_B64}" alt="Raiffeisenverband Tirol">
+        <span>Raiffeisen<br>verband Tirol</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI GRID -->
+  <div class="section-title" style="margin-top:4px">Kennzahlen auf einen Blick</div>
+  <div class="kpi-grid">${kpiBoxesHtml}</div>
+
+  <!-- CHARTS (horizontal bars) -->
+  <div class="charts-row">
+    <div class="chart-box">
+      <div class="chart-title">Kostenstruktur — Anteil am Umsatz</div>
+      ${barRowHtml('Materialaufwand',matQ,'#1a4e8a')}
+      ${barRowHtml('Personalaufwand',perQ,'#c0392b')}
+      ${barRowHtml('Sonstiges',sonQ,'#a06800')}
+      ${barRowHtml('EBITDA',ebitdaQ,'#2e7d52')}
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">Kapitalstruktur — Passiva</div>
+      ${barRowHtml('Eigenkapital',ekQ,'#2e7d52')}
+      ${barRowHtml('Rückstellungen',rueckP,'#a06800')}
+      ${barRowHtml('Verbindlichkeiten',verbP,'#c0392b')}
+      ${barRowHtml('Sonst. Fremdkapital',rueckP!=null&&verbP!=null&&ekQ!=null?Math.max(0,100-ekQ-rueckP-verbP):null,'#1a4e8a')}
+    </div>
+  </div>
+
+  <!-- GuV -->
+  <div class="section-title">Gewinn- &amp; Verlustrechnung ${gjahr}</div>
+  <table style="margin-bottom:18px">
+    <thead><tr><th>Position</th><th style="text-align:right">${vjahr}</th><th style="text-align:right">${gjahr}</th></tr></thead>
+    <tbody>${guvRows}</tbody>
+  </table>
+
+  <!-- BILANZ -->
+  <div class="section-title">Bilanz — Kurzübersicht per 31.12.${gjahr}</div>
+  <div class="two-col">
+    <div><div class="col-title">Aktiva</div><table><tbody>${aktivaRows}</tbody></table></div>
+    <div><div class="col-title">Passiva</div><table><tbody>${passivaRows}</tbody></table></div>
+  </div>
+
+  <!-- KOMMENTAR -->
+  ${kommentar?`<div class="kommentar"><div class="kommentar-label">&#9733; Kommentar des Prüfers — GJ ${gjahr}</div><div>${kommentar.replace(/\n/g,'<br>')}</div></div>`:''}
+
+  <!-- EMPFEHLUNGEN -->
+  ${empfHtml}
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>${c.name} &middot; ${fn} &middot; Jahresbericht ${gjahr}</span>
+    <span>Prüfer: ${c.pruefer} &middot; Vertraulich &middot; Raiffeisenverband Tirol</span>
+  </div>
+
+</div>
+</body>
+</html>`;
+
+  const win=window.open('','_blank');
+  if(!win){alert('Bitte Popup-Blocker deaktivieren und erneut versuchen.');return;}
+  win.document.write(html);
+  win.document.close();
+}
+// ── ENDE PDF EXPORT ──────────────────────────────────────────────────────────
+</script>
+
+<!-- API-KEY MODAL -->
+<div class="modal-overlay" id="apikey-modal-overlay">
+  <div class="modal modal-sm">
+    <div class="modal-title">🔑 Anthropic API-Key</div>
+    <div class="modal-sub">Wird nur in diesem Browser gespeichert — nie übertragen.</div>
+    <div class="form-group">
+      <label class="form-label">API-Key</label>
+      <input class="form-input" id="apikey-input" type="password" placeholder="sk-ant-api03-...">
+    </div>
+    <div style="font-size:11.5px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+      Key holen: <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--amber)">console.anthropic.com</a><br>
+      Der Key wird sicher in deinem Browser gespeichert und verlässt das Gerät nur für direkte Anfragen an Anthropic.
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="removeApiKey()">Key löschen</button>
+      <div class="modal-footer-right">
+        <button class="btn btn-ghost" onclick="closeApiKeyModal()">Abbrechen</button>
+        <button class="btn btn-primary" onclick="saveApiKeyFromModal()">Speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
